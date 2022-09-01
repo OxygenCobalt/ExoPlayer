@@ -36,17 +36,11 @@ import java.nio.ByteBuffer;
   private static final double PCM_32_BIT_INT_TO_PCM_32_BIT_FLOAT_FACTOR = 1.0 / 0x7FFFFFFF;
 
   @Override
-  public AudioFormat onConfigure(AudioFormat inputAudioFormat)
-      throws UnhandledAudioFormatException {
+  public AudioFormat onConfigure(AudioFormat inputAudioFormat) {
     @C.PcmEncoding int encoding = inputAudioFormat.encoding;
-    if (!Util.isEncodingHighResolutionPcm(encoding)) {
-      throw new UnhandledAudioFormatException(inputAudioFormat);
-    }
-
-    boolean floatSupported = encoding == C.ENCODING_PCM_FLOAT;
-    boolean intSupported = Util.SDK_INT >= 31 && (encoding == C.ENCODING_PCM_24BIT || encoding == C.ENCODING_PCM_32BIT);
-
-    if (floatSupported || intSupported) {
+    if (encoding != C.ENCODING_PCM_FLOAT &&
+        !(Util.SDK_INT < 31 && (
+            encoding == C.ENCODING_PCM_24BIT || encoding == C.ENCODING_PCM_32BIT))) {
       return AudioFormat.NOT_SET;
     }
 

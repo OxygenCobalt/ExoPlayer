@@ -613,11 +613,16 @@ public final class DefaultAudioSink implements AudioSink {
     trimmingAudioProcessor = new TrimmingAudioProcessor();
     ArrayList<AudioProcessor> audioProcessors = new ArrayList<>();
     if (enableFloatOutput) {
-      audioProcessors.add(new FloatResamplingAudioProcessor());
+      Collections.addAll(audioProcessors, new FloatResamplingAudioProcessor(), trimmingAudioProcessor);
     } else {
-      audioProcessors.add(new ResamplingAudioProcessor());
+      Collections.addAll(
+          audioProcessors,
+          new ResamplingAudioProcessor(),
+          channelMappingAudioProcessor, // Channel mapping is only done < API 21, in which enableFloatOutput will always be false.
+          trimmingAudioProcessor
+      );
     }
-    Collections.addAll(audioProcessors, channelMappingAudioProcessor, trimmingAudioProcessor);
+
     Collections.addAll(audioProcessors, audioProcessorChain.getAudioProcessors());
     availableAudioProcessors = audioProcessors.toArray(new AudioProcessor[0]);
     volume = 1f;
