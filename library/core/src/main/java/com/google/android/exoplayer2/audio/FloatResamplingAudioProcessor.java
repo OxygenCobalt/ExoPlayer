@@ -42,10 +42,16 @@ import java.nio.ByteBuffer;
     if (!Util.isEncodingHighResolutionPcm(encoding)) {
       throw new UnhandledAudioFormatException(inputAudioFormat);
     }
-    return encoding != C.ENCODING_PCM_FLOAT
-        ? new AudioFormat(
-            inputAudioFormat.sampleRate, inputAudioFormat.channelCount, C.ENCODING_PCM_FLOAT)
-        : AudioFormat.NOT_SET;
+
+    boolean floatSupported = encoding == C.ENCODING_PCM_FLOAT;
+    boolean intSupported = Util.SDK_INT >= 31 && (encoding == C.ENCODING_PCM_24BIT || encoding == C.ENCODING_PCM_32BIT);
+
+    if (floatSupported || intSupported) {
+      return AudioFormat.NOT_SET;
+    }
+
+    return new AudioFormat(
+        inputAudioFormat.sampleRate, inputAudioFormat.channelCount, C.ENCODING_PCM_FLOAT);
   }
 
   @Override

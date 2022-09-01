@@ -490,8 +490,14 @@ public final class DefaultAudioSink implements AudioSink {
         return SINK_FORMAT_UNSUPPORTED;
       }
 
-      if (format.pcmEncoding == C.ENCODING_PCM_16BIT
-          || (enableFloatOutput && format.pcmEncoding == C.ENCODING_PCM_FLOAT)) {
+      boolean intSupported = format.pcmEncoding == C.ENCODING_PCM_16BIT;
+      boolean floatSupported = enableFloatOutput && format.pcmEncoding == C.ENCODING_PCM_FLOAT;
+      boolean highResIntSupported = enableFloatOutput
+          && Util.SDK_INT >= 31
+          && (format.pcmEncoding == C.ENCODING_PCM_24BIT
+            || format.pcmEncoding == C.ENCODING_PCM_32BIT);
+
+      if (intSupported || floatSupported || highResIntSupported) {
         return SINK_FORMAT_SUPPORTED_DIRECTLY;
       }
       // We can resample all linear PCM encodings to 16-bit integer PCM, which AudioTrack is
