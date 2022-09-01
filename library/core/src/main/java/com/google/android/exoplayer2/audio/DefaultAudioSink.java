@@ -69,6 +69,10 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
  * with a different duration than their input, and buffer processors must produce output
  * corresponding to their last input immediately after that input is queued. This means that, for
  * example, speed adjustment is not possible while using tunneling.
+ *
+ * TODO: Migrate Sonic, Silence, and Trimming skipping to handle ALL formats
+ * TODO: Try to make the channel mapping process slightly more coherent
+ * TODO: Collapse away enableFloatOutput
  */
 public final class DefaultAudioSink implements AudioSink {
 
@@ -613,12 +617,13 @@ public final class DefaultAudioSink implements AudioSink {
     trimmingAudioProcessor = new TrimmingAudioProcessor();
     ArrayList<AudioProcessor> audioProcessors = new ArrayList<>();
     if (enableFloatOutput) {
-      Collections.addAll(audioProcessors, new FloatResamplingAudioProcessor(), trimmingAudioProcessor);
+      Collections.addAll(audioProcessors, new FloatResamplingAudioProcessor());
     } else {
       Collections.addAll(
           audioProcessors,
           new ResamplingAudioProcessor(),
-          channelMappingAudioProcessor, // Channel mapping is only done < API 21, in which enableFloatOutput will always be false.
+          // Channel mapping is only done < API 21, in which enableFloatOutput will always be false.
+          channelMappingAudioProcessor,
           trimmingAudioProcessor
       );
     }
@@ -745,6 +750,7 @@ public final class DefaultAudioSink implements AudioSink {
             outputFormat = nextFormat;
           }
         } catch (UnhandledAudioFormatException e) {
+          Log.d("DefaultAudioSink", "I AM A STUPID RETARDED FUCKING DUMBASS IDIOT " + audioProcessor.getClass().getSimpleName());
           throw new ConfigurationException(e, inputFormat);
         }
       }
