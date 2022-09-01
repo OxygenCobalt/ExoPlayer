@@ -23,7 +23,6 @@ import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.dvbsi.AppInfoTable;
 import com.google.android.exoplayer2.metadata.emsg.EventMessage;
 import com.google.android.exoplayer2.metadata.flac.PictureFrame;
-import com.google.android.exoplayer2.metadata.flac.VorbisComment;
 import com.google.android.exoplayer2.metadata.icy.IcyHeaders;
 import com.google.android.exoplayer2.metadata.icy.IcyInfo;
 import com.google.android.exoplayer2.metadata.id3.Id3Frame;
@@ -32,9 +31,11 @@ import com.google.android.exoplayer2.metadata.mp4.MotionPhotoMetadata;
 import com.google.android.exoplayer2.metadata.mp4.SlowMotionData;
 import com.google.android.exoplayer2.metadata.mp4.SmtaMetadataEntry;
 import com.google.android.exoplayer2.metadata.scte35.SpliceCommand;
+import com.google.android.exoplayer2.metadata.vorbis.VorbisComment;
 import com.google.android.exoplayer2.testutil.CapturingRenderersFactory;
 import com.google.android.exoplayer2.testutil.Dumper;
 import com.google.android.exoplayer2.text.Cue;
+import com.google.android.exoplayer2.text.CueGroup;
 import com.google.android.exoplayer2.util.Util;
 import com.google.common.collect.ImmutableList;
 import java.nio.ByteBuffer;
@@ -54,12 +55,14 @@ public final class PlaybackOutput implements Dumper.Dumpable {
 
   private final List<Metadata> metadatas;
   private final List<List<Cue>> subtitles;
+  private final List<List<Cue>> subtitlesFromDeprecatedTextOutput;
 
   private PlaybackOutput(ExoPlayer player, CapturingRenderersFactory capturingRenderersFactory) {
     this.capturingRenderersFactory = capturingRenderersFactory;
 
     metadatas = Collections.synchronizedList(new ArrayList<>());
     subtitles = Collections.synchronizedList(new ArrayList<>());
+    subtitlesFromDeprecatedTextOutput = Collections.synchronizedList(new ArrayList<>());
     // TODO: Consider passing playback position into MetadataOutput and TextOutput. Calling
     // player.getCurrentPosition() inside onMetadata/Cues will likely be non-deterministic
     // because renderer-thread != playback-thread.
@@ -72,7 +75,12 @@ public final class PlaybackOutput implements Dumper.Dumpable {
 
           @Override
           public void onCues(List<Cue> cues) {
-            subtitles.add(cues);
+            subtitlesFromDeprecatedTextOutput.add(cues);
+          }
+
+          @Override
+          public void onCues(CueGroup cueGroup) {
+            subtitles.add(cueGroup.cues);
           }
         });
   }
@@ -144,6 +152,11 @@ public final class PlaybackOutput implements Dumper.Dumpable {
   }
 
   private void dumpSubtitles(Dumper dumper) {
+    if (!subtitles.equals(subtitlesFromDeprecatedTextOutput)) {
+      throw new IllegalStateException(
+          "Expected subtitles to be equal from both implementations of onCues method.");
+    }
+
     if (subtitles.isEmpty()) {
       return;
     }

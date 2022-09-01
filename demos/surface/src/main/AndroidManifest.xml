@@ -22,12 +22,14 @@
   <uses-sdk/>
 
   <application
-    android:allowBackup="false"
-    android:icon="@mipmap/ic_launcher"
-    android:label="@string/application_name"
-    android:exported="true">
+      android:allowBackup="false"
+      android:icon="@mipmap/ic_launcher"
+      android:label="@string/application_name"
+      android:exported="true">
 
-    <activity android:name=".MainActivity">
+    <activity
+        android:name=".MainActivity"
+        android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER"/>
@@ -40,6 +42,12 @@
         <data android:scheme="content"/>
         <data android:scheme="asset"/>
         <data android:scheme="file"/>
+      </intent-filter>
+      <intent-filter>
+        <action android:name="com.google.android.exoplayer.surfacedemo.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <data android:scheme="content"/>
+        <data android:mimeType="*/*"/>
       </intent-filter>
     </activity>
 

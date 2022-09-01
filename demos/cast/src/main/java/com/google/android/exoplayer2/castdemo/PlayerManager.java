@@ -25,10 +25,9 @@ import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.Player.DiscontinuityReason;
 import com.google.android.exoplayer2.Player.TimelineChangeReason;
 import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.TracksInfo;
+import com.google.android.exoplayer2.Tracks;
 import com.google.android.exoplayer2.ext.cast.CastPlayer;
 import com.google.android.exoplayer2.ext.cast.SessionAvailabilityListener;
-import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.ui.StyledPlayerControlView;
 import com.google.android.exoplayer2.ui.StyledPlayerView;
 import com.google.android.gms.cast.framework.CastContext;
@@ -58,7 +57,7 @@ import java.util.ArrayList;
   private final ArrayList<MediaItem> mediaQueue;
   private final Listener listener;
 
-  private TracksInfo lastSeenTrackGroupInfo;
+  private Tracks lastSeenTracks;
   private int currentItemIndex;
   private Player currentPlayer;
 
@@ -67,7 +66,7 @@ import java.util.ArrayList;
    *
    * @param context A {@link Context}.
    * @param listener A {@link Listener} for queue position changes.
-   * @param playerView The {@link PlayerView} for playback.
+   * @param playerView The {@link StyledPlayerView} for playback.
    * @param castContext The {@link CastContext}.
    */
   public PlayerManager(
@@ -220,17 +219,19 @@ import java.util.ArrayList;
   }
 
   @Override
-  public void onTracksInfoChanged(TracksInfo tracksInfo) {
-    if (currentPlayer != localPlayer || tracksInfo == lastSeenTrackGroupInfo) {
+  public void onTracksChanged(Tracks tracks) {
+    if (currentPlayer != localPlayer || tracks == lastSeenTracks) {
       return;
     }
-    if (!tracksInfo.isTypeSupportedOrEmpty(C.TRACK_TYPE_VIDEO)) {
+    if (tracks.containsType(C.TRACK_TYPE_VIDEO)
+        && !tracks.isTypeSupported(C.TRACK_TYPE_VIDEO, /* allowExceedsCapabilities= */ true)) {
       listener.onUnsupportedTrack(C.TRACK_TYPE_VIDEO);
     }
-    if (!tracksInfo.isTypeSupportedOrEmpty(C.TRACK_TYPE_AUDIO)) {
+    if (tracks.containsType(C.TRACK_TYPE_AUDIO)
+        && !tracks.isTypeSupported(C.TRACK_TYPE_AUDIO, /* allowExceedsCapabilities= */ true)) {
       listener.onUnsupportedTrack(C.TRACK_TYPE_AUDIO);
     }
-    lastSeenTrackGroupInfo = tracksInfo;
+    lastSeenTracks = tracks;
   }
 
   // CastPlayer.SessionAvailabilityListener implementation.

@@ -254,8 +254,7 @@ import java.util.regex.Pattern;
     }
   }
 
-  @RtspRequest.Method
-  private static int parseMethodString(String method) {
+  private static @RtspRequest.Method int parseMethodString(String method) {
     switch (method) {
       case "ANNOUNCE":
         return METHOD_ANNOUNCE;
@@ -456,6 +455,21 @@ import java.util.regex.Pattern;
     }
     throw ParserException.createForMalformedManifest(
         "Invalid WWW-Authenticate header " + headerValue, /* cause= */ null);
+  }
+
+  /**
+   * Throws {@link ParserException#createForMalformedManifest ParserException} if {@code expression}
+   * evaluates to false.
+   *
+   * @param expression The expression to evaluate.
+   * @param message The error message.
+   * @throws ParserException If {@code expression} is false.
+   */
+  public static void checkManifestExpression(boolean expression, @Nullable String message)
+      throws ParserException {
+    if (!expression) {
+      throw ParserException.createForMalformedManifest(message, /* cause= */ null);
+    }
   }
 
   private static String getRtspStatusReasonPhrase(int statusCode) {

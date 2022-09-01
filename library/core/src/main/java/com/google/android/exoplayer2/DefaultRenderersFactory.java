@@ -15,6 +15,8 @@
  */
 package com.google.android.exoplayer2;
 
+import static java.lang.annotation.ElementType.TYPE_USE;
+
 import android.content.Context;
 import android.media.MediaCodec;
 import android.media.PlaybackParams;
@@ -26,7 +28,6 @@ import com.google.android.exoplayer2.audio.AudioCapabilities;
 import com.google.android.exoplayer2.audio.AudioRendererEventListener;
 import com.google.android.exoplayer2.audio.AudioSink;
 import com.google.android.exoplayer2.audio.DefaultAudioSink;
-import com.google.android.exoplayer2.audio.DefaultAudioSink.DefaultAudioProcessorChain;
 import com.google.android.exoplayer2.audio.MediaCodecAudioRenderer;
 import com.google.android.exoplayer2.mediacodec.DefaultMediaCodecAdapterFactory;
 import com.google.android.exoplayer2.mediacodec.MediaCodecAdapter;
@@ -43,6 +44,7 @@ import com.google.android.exoplayer2.video.spherical.CameraMotionRenderer;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 
@@ -61,6 +63,7 @@ public class DefaultRenderersFactory implements RenderersFactory {
    */
   @Documented
   @Retention(RetentionPolicy.SOURCE)
+  @Target(TYPE_USE)
   @IntDef({EXTENSION_RENDERER_MODE_OFF, EXTENSION_RENDERER_MODE_ON, EXTENSION_RENDERER_MODE_PREFER})
   public @interface ExtensionRendererMode {}
   /** Do not allow use of extension renderers. */
@@ -90,7 +93,7 @@ public class DefaultRenderersFactory implements RenderersFactory {
 
   private final Context context;
   private final DefaultMediaCodecAdapterFactory codecAdapterFactory;
-  @ExtensionRendererMode private int extensionRendererMode;
+  private @ExtensionRendererMode int extensionRendererMode;
   private long allowedVideoJoiningTimeMs;
   private boolean enableDecoderFallback;
   private MediaCodecSelector mediaCodecSelector;
@@ -98,40 +101,15 @@ public class DefaultRenderersFactory implements RenderersFactory {
   private boolean enableAudioTrackPlaybackParams;
   private boolean enableOffload;
 
-  /** @param context A {@link Context}. */
+  /**
+   * @param context A {@link Context}.
+   */
   public DefaultRenderersFactory(Context context) {
     this.context = context;
     codecAdapterFactory = new DefaultMediaCodecAdapterFactory();
     extensionRendererMode = EXTENSION_RENDERER_MODE_OFF;
     allowedVideoJoiningTimeMs = DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS;
     mediaCodecSelector = MediaCodecSelector.DEFAULT;
-  }
-
-  /**
-   * @deprecated Use {@link #DefaultRenderersFactory(Context)} and {@link
-   *     #setExtensionRendererMode(int)}.
-   */
-  @Deprecated
-  @SuppressWarnings("deprecation")
-  public DefaultRenderersFactory(
-      Context context, @ExtensionRendererMode int extensionRendererMode) {
-    this(context, extensionRendererMode, DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS);
-  }
-
-  /**
-   * @deprecated Use {@link #DefaultRenderersFactory(Context)}, {@link
-   *     #setExtensionRendererMode(int)} and {@link #setAllowedVideoJoiningTimeMs(long)}.
-   */
-  @Deprecated
-  public DefaultRenderersFactory(
-      Context context,
-      @ExtensionRendererMode int extensionRendererMode,
-      long allowedVideoJoiningTimeMs) {
-    this.context = context;
-    this.extensionRendererMode = extensionRendererMode;
-    this.allowedVideoJoiningTimeMs = allowedVideoJoiningTimeMs;
-    mediaCodecSelector = MediaCodecSelector.DEFAULT;
-    codecAdapterFactory = new DefaultMediaCodecAdapterFactory();
   }
 
   /**
@@ -188,25 +166,6 @@ public class DefaultRenderersFactory implements RenderersFactory {
   public DefaultRenderersFactory experimentalSetSynchronizeCodecInteractionsWithQueueingEnabled(
       boolean enabled) {
     codecAdapterFactory.experimentalSetSynchronizeCodecInteractionsWithQueueingEnabled(enabled);
-    return this;
-  }
-
-  /**
-   * Enable calling {@link MediaCodec#start} immediately after {@link MediaCodec#flush} on the
-   * playback thread, when operating the codec in asynchronous mode. If disabled, {@link
-   * MediaCodec#start} will be called by the callback thread after pending callbacks are handled.
-   *
-   * <p>By default, this feature is disabled.
-   *
-   * <p>This method is experimental, and will be renamed or removed in a future release.
-   *
-   * @param enabled Whether {@link MediaCodec#start} will be called on the playback thread
-   *     immediately after {@link MediaCodec#flush}.
-   * @return This factory, for convenience.
-   */
-  public DefaultRenderersFactory experimentalSetImmediateCodecStartAfterFlushEnabled(
-      boolean enabled) {
-    codecAdapterFactory.experimentalSetImmediateCodecStartAfterFlushEnabled(enabled);
     return this;
   }
 
@@ -499,6 +458,19 @@ public class DefaultRenderersFactory implements RenderersFactory {
     }
 
     try {
+      Class<?> clazz = Class.forName("com.google.android.exoplayer2.decoder.midi.MidiRenderer");
+      Constructor<?> constructor = clazz.getConstructor();
+      Renderer renderer = (Renderer) constructor.newInstance();
+      out.add(extensionRendererIndex++, renderer);
+      Log.i(TAG, "Loaded MidiRenderer.");
+    } catch (ClassNotFoundException e) {
+      // Expected if the app was built without the extension.
+    } catch (Exception e) {
+      // The extension is present, but instantiation failed.
+      throw new RuntimeException("Error instantiating MIDI extension", e);
+    }
+
+    try {
       // Full class names used for constructor args so the LINT rule triggers if any of them move.
       Class<?> clazz = Class.forName("com.google.android.exoplayer2.ext.opus.LibopusAudioRenderer");
       Constructor<?> constructor =
@@ -640,14 +612,15 @@ public class DefaultRenderersFactory implements RenderersFactory {
       boolean enableFloatOutput,
       boolean enableAudioTrackPlaybackParams,
       boolean enableOffload) {
-    return new DefaultAudioSink(
-        AudioCapabilities.getCapabilities(context),
-        new DefaultAudioProcessorChain(),
-        enableFloatOutput,
-        enableAudioTrackPlaybackParams,
-        enableOffload
-            ? DefaultAudioSink.OFFLOAD_MODE_ENABLED_GAPLESS_REQUIRED
-            : DefaultAudioSink.OFFLOAD_MODE_DISABLED);
+    return new DefaultAudioSink.Builder()
+        .setAudioCapabilities(AudioCapabilities.getCapabilities(context))
+        .setEnableFloatOutput(enableFloatOutput)
+        .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
+        .setOffloadMode(
+            enableOffload
+                ? DefaultAudioSink.OFFLOAD_MODE_ENABLED_GAPLESS_REQUIRED
+                : DefaultAudioSink.OFFLOAD_MODE_DISABLED)
+        .build();
   }
 
   /**

@@ -18,7 +18,6 @@ package com.google.android.exoplayer2;
 import static com.google.android.exoplayer2.Player.EVENT_IS_PLAYING_CHANGED;
 import static com.google.android.exoplayer2.Player.EVENT_MEDIA_ITEM_TRANSITION;
 import static com.google.android.exoplayer2.Player.EVENT_TIMELINE_CHANGED;
-import static com.google.android.exoplayer2.util.Assertions.checkArgument;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
@@ -26,15 +25,11 @@ import static org.mockito.Mockito.verify;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.android.exoplayer2.testutil.StubPlayer;
+import com.google.android.exoplayer2.testutil.TestUtil;
 import com.google.android.exoplayer2.util.FlagSet;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Queue;
 import java.util.Set;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -106,28 +101,13 @@ public class ForwardingPlayerTest {
   @Test
   public void forwardingPlayer_overridesAllPlayerMethods() throws Exception {
     // Check with reflection that ForwardingPlayer overrides all Player methods.
-    List<Method> methods = getPublicMethods(Player.class);
-    for (int i = 0; i < methods.size(); i++) {
-      Method method = methods.get(i);
+    List<Method> methods = TestUtil.getPublicMethods(Player.class);
+    for (Method method : methods) {
       assertThat(
-              ForwardingPlayer.class.getDeclaredMethod(
-                  method.getName(), method.getParameterTypes()))
-          .isNotNull();
-    }
-  }
-
-  @Test
-  @SuppressWarnings("deprecation") // Testing backwards compatibility with deprecated type.
-  public void forwardingEventListener_overridesAllEventListenerMethods() throws Exception {
-    // Check with reflection that ForwardingListener overrides all Listener methods.
-    Class<?> forwardingListenerClass = getInnerClass("ForwardingEventListener");
-    List<Method> methods = getPublicMethods(Player.EventListener.class);
-    for (int i = 0; i < methods.size(); i++) {
-      Method method = methods.get(i);
-      assertThat(
-              forwardingListenerClass.getDeclaredMethod(
-                  method.getName(), method.getParameterTypes()))
-          .isNotNull();
+              ForwardingPlayer.class
+                  .getDeclaredMethod(method.getName(), method.getParameterTypes())
+                  .getDeclaringClass())
+          .isEqualTo(ForwardingPlayer.class);
     }
   }
 
@@ -135,38 +115,14 @@ public class ForwardingPlayerTest {
   public void forwardingListener_overridesAllListenerMethods() throws Exception {
     // Check with reflection that ForwardingListener overrides all Listener methods.
     Class<?> forwardingListenerClass = getInnerClass("ForwardingListener");
-    List<Method> methods = getPublicMethods(Player.Listener.class);
-    for (int i = 0; i < methods.size(); i++) {
-      Method method = methods.get(i);
-      assertThat(forwardingListenerClass.getMethod(method.getName(), method.getParameterTypes()))
-          .isNotNull();
+    List<Method> methods = TestUtil.getPublicMethods(Player.Listener.class);
+    for (Method method : methods) {
+      assertThat(
+              forwardingListenerClass
+                  .getMethod(method.getName(), method.getParameterTypes())
+                  .getDeclaringClass())
+          .isEqualTo(forwardingListenerClass);
     }
-  }
-
-  /** Returns all the public methods of a Java interface. */
-  private static List<Method> getPublicMethods(Class<?> anInterface) {
-    checkArgument(anInterface.isInterface());
-    // Run a BFS over all extended interfaces to inspect them all.
-    Queue<Class<?>> interfacesQueue = new ArrayDeque<>();
-    interfacesQueue.add(anInterface);
-    Set<Class<?>> interfaces = new HashSet<>();
-    while (!interfacesQueue.isEmpty()) {
-      Class<?> currentInterface = interfacesQueue.remove();
-      if (interfaces.add(currentInterface)) {
-        Collections.addAll(interfacesQueue, currentInterface.getInterfaces());
-      }
-    }
-
-    List<Method> list = new ArrayList<>();
-    for (Class<?> currentInterface : interfaces) {
-      for (Method method : currentInterface.getDeclaredMethods()) {
-        if (Modifier.isPublic(method.getModifiers())) {
-          list.add(method);
-        }
-      }
-    }
-
-    return list;
   }
 
   private static Class<?> getInnerClass(String className) {

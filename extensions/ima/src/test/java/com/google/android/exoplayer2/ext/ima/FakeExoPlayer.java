@@ -15,13 +15,16 @@
  */
 package com.google.android.exoplayer2.ext.ima;
 
+import static com.google.android.exoplayer2.util.Assertions.checkState;
+
 import android.os.Looper;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.TracksInfo;
+import com.google.android.exoplayer2.Tracks;
 import com.google.android.exoplayer2.testutil.StubExoPlayer;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.TrackSelectionParameters;
@@ -39,7 +42,7 @@ import com.google.android.exoplayer2.util.Util;
   private final MediaItem mediaItem = MediaItem.fromUri("http://google.com/0");
 
   private Timeline timeline;
-  @Player.State private int state;
+  private @Player.State int state;
   private boolean playWhenReady;
   private int periodIndex;
   private long positionMs;
@@ -76,7 +79,7 @@ import com.google.android.exoplayer2.util.Util;
     PositionInfo oldPosition =
         new PositionInfo(
             windowUid,
-            /* windowIndex= */ 0,
+            /* mediaItemIndex= */ 0,
             mediaItem,
             periodUid,
             /* periodIndex= */ 0,
@@ -94,7 +97,7 @@ import com.google.android.exoplayer2.util.Util;
       PositionInfo newPosition =
           new PositionInfo(
               windowUid,
-              /* windowIndex= */ 0,
+              /* mediaItemIndex= */ 0,
               mediaItem,
               periodUid,
               /* periodIndex= */ 0,
@@ -125,7 +128,7 @@ import com.google.android.exoplayer2.util.Util;
     PositionInfo oldPosition =
         new PositionInfo(
             windowUid,
-            /* windowIndex= */ 0,
+            /* mediaItemIndex= */ 0,
             mediaItem,
             periodUid,
             /* periodIndex= */ 0,
@@ -143,7 +146,7 @@ import com.google.android.exoplayer2.util.Util;
       PositionInfo newPosition =
           new PositionInfo(
               windowUid,
-              /* windowIndex= */ 0,
+              /* mediaItemIndex= */ 0,
               mediaItem,
               periodUid,
               /* periodIndex= */ 0,
@@ -182,6 +185,29 @@ import com.google.android.exoplayer2.util.Util;
     }
   }
 
+  /**
+   * Sets an error on this player.
+   *
+   * <p>This will propagate the error to {@link Player.Listener#onPlayerError(PlaybackException)}
+   * and {@link Player.Listener#onPlayerErrorChanged(PlaybackException)} and will also update the
+   * state to {@link Player#STATE_IDLE}.
+   *
+   * <p>The player must be in {@link #STATE_BUFFERING} or {@link #STATE_READY}.
+   */
+  @SuppressWarnings("deprecation") // Calling deprecated listener.onPlayerStateChanged()
+  public void setPlayerError(PlaybackException error) {
+    checkState(state == STATE_BUFFERING || state == STATE_READY);
+    this.state = Player.STATE_IDLE;
+    listeners.sendEvent(
+        Player.EVENT_PLAYBACK_STATE_CHANGED,
+        listener -> {
+          listener.onPlayerError(error);
+          listener.onPlayerErrorChanged(error);
+          listener.onPlayerStateChanged(playWhenReady, state);
+          listener.onPlaybackStateChanged(state);
+        });
+  }
+
   // ExoPlayer methods. Other methods are unsupported.
 
   @Override
@@ -210,8 +236,7 @@ import com.google.android.exoplayer2.util.Util;
   }
 
   @Override
-  @Player.State
-  public int getPlaybackState() {
+  public @Player.State int getPlaybackState() {
     return state;
   }
 
@@ -221,8 +246,7 @@ import com.google.android.exoplayer2.util.Util;
   }
 
   @Override
-  @RepeatMode
-  public int getRepeatMode() {
+  public @RepeatMode int getRepeatMode() {
     return REPEAT_MODE_OFF;
   }
 
@@ -242,8 +266,8 @@ import com.google.android.exoplayer2.util.Util;
   }
 
   @Override
-  public TracksInfo getCurrentTracksInfo() {
-    return TracksInfo.EMPTY;
+  public Tracks getCurrentTracks() {
+    return Tracks.EMPTY;
   }
 
   @Override

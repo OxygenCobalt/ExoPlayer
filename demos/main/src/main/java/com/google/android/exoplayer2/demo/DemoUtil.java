@@ -22,21 +22,16 @@ import com.google.android.exoplayer2.database.DatabaseProvider;
 import com.google.android.exoplayer2.database.StandaloneDatabaseProvider;
 import com.google.android.exoplayer2.ext.cronet.CronetDataSource;
 import com.google.android.exoplayer2.ext.cronet.CronetUtil;
-import com.google.android.exoplayer2.offline.ActionFileUpgradeUtil;
-import com.google.android.exoplayer2.offline.DefaultDownloadIndex;
 import com.google.android.exoplayer2.offline.DownloadManager;
 import com.google.android.exoplayer2.ui.DownloadNotificationHelper;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
-import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.upstream.cache.Cache;
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource;
 import com.google.android.exoplayer2.upstream.cache.NoOpCacheEvictor;
 import com.google.android.exoplayer2.upstream.cache.SimpleCache;
-import com.google.android.exoplayer2.util.Log;
 import java.io.File;
-import java.io.IOException;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
@@ -60,12 +55,10 @@ public final class DemoUtil {
   private static final boolean USE_CRONET_FOR_NETWORKING = true;
 
   private static final String TAG = "DemoUtil";
-  private static final String DOWNLOAD_ACTION_FILE = "actions";
-  private static final String DOWNLOAD_TRACKER_ACTION_FILE = "tracked_actions";
   private static final String DOWNLOAD_CONTENT_DIRECTORY = "downloads";
 
   private static DataSource.@MonotonicNonNull Factory dataSourceFactory;
-  private static HttpDataSource.@MonotonicNonNull Factory httpDataSourceFactory;
+  private static DataSource.@MonotonicNonNull Factory httpDataSourceFactory;
   private static @MonotonicNonNull DatabaseProvider databaseProvider;
   private static @MonotonicNonNull File downloadDirectory;
   private static @MonotonicNonNull Cache downloadCache;
@@ -91,7 +84,7 @@ public final class DemoUtil {
         .setExtensionRendererMode(extensionRendererMode);
   }
 
-  public static synchronized HttpDataSource.Factory getHttpDataSourceFactory(Context context) {
+  public static synchronized DataSource.Factory getHttpDataSourceFactory(Context context) {
     if (httpDataSourceFactory == null) {
       if (USE_CRONET_FOR_NETWORKING) {
         context = context.getApplicationContext();
@@ -155,14 +148,6 @@ public final class DemoUtil {
 
   private static synchronized void ensureDownloadManagerInitialized(Context context) {
     if (downloadManager == null) {
-      DefaultDownloadIndex downloadIndex = new DefaultDownloadIndex(getDatabaseProvider(context));
-      upgradeActionFile(
-          context, DOWNLOAD_ACTION_FILE, downloadIndex, /* addNewDownloadsAsCompleted= */ false);
-      upgradeActionFile(
-          context,
-          DOWNLOAD_TRACKER_ACTION_FILE,
-          downloadIndex,
-          /* addNewDownloadsAsCompleted= */ true);
       downloadManager =
           new DownloadManager(
               context,
@@ -172,23 +157,6 @@ public final class DemoUtil {
               Executors.newFixedThreadPool(/* nThreads= */ 6));
       downloadTracker =
           new DownloadTracker(context, getHttpDataSourceFactory(context), downloadManager);
-    }
-  }
-
-  private static synchronized void upgradeActionFile(
-      Context context,
-      String fileName,
-      DefaultDownloadIndex downloadIndex,
-      boolean addNewDownloadsAsCompleted) {
-    try {
-      ActionFileUpgradeUtil.upgradeAndDelete(
-          new File(getDownloadDirectory(context), fileName),
-          /* downloadIdProvider= */ null,
-          downloadIndex,
-          /* deleteOnFailure= */ true,
-          addNewDownloadsAsCompleted);
-    } catch (IOException e) {
-      Log.e(TAG, "Failed to upgrade action file: " + fileName, e);
     }
   }
 

@@ -18,6 +18,7 @@ package com.google.android.exoplayer2.drm;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
+import androidx.annotation.CheckResult;
 import androidx.annotation.Nullable;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.drm.DrmInitData.SchemeData;
@@ -51,7 +52,8 @@ public final class DrmInitData implements Comparator<SchemeData>, Parcelable {
    * @param mediaData DRM session acquisition data obtained from the media.
    * @return A {@link DrmInitData} obtained from merging a media manifest and a media stream.
    */
-  public static @Nullable DrmInitData createSessionCreationData(
+  @Nullable
+  public static DrmInitData createSessionCreationData(
       @Nullable DrmInitData manifestData, @Nullable DrmInitData mediaData) {
     ArrayList<SchemeData> result = new ArrayList<>();
     String schemeType = null;
@@ -90,7 +92,9 @@ public final class DrmInitData implements Comparator<SchemeData>, Parcelable {
   /** Number of {@link SchemeData}s. */
   public final int schemeDataCount;
 
-  /** @param schemeDatas Scheme initialization data for possibly multiple DRM schemes. */
+  /**
+   * @param schemeDatas Scheme initialization data for possibly multiple DRM schemes.
+   */
   public DrmInitData(List<SchemeData> schemeDatas) {
     this(null, false, schemeDatas.toArray(new SchemeData[0]));
   }
@@ -103,7 +107,9 @@ public final class DrmInitData implements Comparator<SchemeData>, Parcelable {
     this(schemeType, false, schemeDatas.toArray(new SchemeData[0]));
   }
 
-  /** @param schemeDatas Scheme initialization data for possibly multiple DRM schemes. */
+  /**
+   * @param schemeDatas Scheme initialization data for possibly multiple DRM schemes.
+   */
   public DrmInitData(SchemeData... schemeDatas) {
     this(null, schemeDatas);
   }
@@ -151,6 +157,7 @@ public final class DrmInitData implements Comparator<SchemeData>, Parcelable {
    * @param schemeType A protection scheme type. May be null.
    * @return A copy with the specified protection scheme type.
    */
+  @CheckResult
   public DrmInitData copyWithSchemeType(@Nullable String schemeType) {
     if (Util.areEqual(this.schemeType, schemeType)) {
       return this;
@@ -327,6 +334,7 @@ public final class DrmInitData implements Comparator<SchemeData>, Parcelable {
      * @param data The data to include in the copy.
      * @return The new instance.
      */
+    @CheckResult
     public SchemeData copyWithData(@Nullable byte[] data) {
       return new SchemeData(uuid, licenseServerUrl, mimeType, data);
     }

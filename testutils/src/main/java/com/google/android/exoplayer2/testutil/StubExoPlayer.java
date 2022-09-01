@@ -22,6 +22,7 @@ import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.PlayerMessage;
+import com.google.android.exoplayer2.Renderer;
 import com.google.android.exoplayer2.SeekParameters;
 import com.google.android.exoplayer2.analytics.AnalyticsCollector;
 import com.google.android.exoplayer2.analytics.AnalyticsListener;
@@ -30,6 +31,8 @@ import com.google.android.exoplayer2.audio.AuxEffectInfo;
 import com.google.android.exoplayer2.decoder.DecoderCounters;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.ShuffleOrder;
+import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.util.Clock;
 import com.google.android.exoplayer2.util.PriorityTaskManager;
@@ -43,24 +46,40 @@ import java.util.List;
  */
 public class StubExoPlayer extends StubPlayer implements ExoPlayer {
 
+  /**
+   * @deprecated Use {@link ExoPlayer}, as the {@link AudioComponent} methods are defined by that
+   *     interface.
+   */
   @Override
   @Deprecated
   public AudioComponent getAudioComponent() {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * @deprecated Use {@link ExoPlayer}, as the {@link VideoComponent} methods are defined by that
+   *     interface.
+   */
   @Override
   @Deprecated
   public VideoComponent getVideoComponent() {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * @deprecated Use {@link Player}, as the {@link TextComponent} methods are defined by that
+   *     interface.
+   */
   @Override
   @Deprecated
   public TextComponent getTextComponent() {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * @deprecated Use {@link Player}, as the {@link DeviceComponent} methods are defined by that
+   *     interface.
+   */
   @Override
   @Deprecated
   public DeviceComponent getDeviceComponent() {
@@ -74,16 +93,6 @@ public class StubExoPlayer extends StubPlayer implements ExoPlayer {
 
   @Override
   public Clock getClock() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void addListener(Player.EventListener listener) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void removeListener(Player.EventListener listener) {
     throw new UnsupportedOperationException();
   }
 
@@ -117,18 +126,27 @@ public class StubExoPlayer extends StubPlayer implements ExoPlayer {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * @deprecated Use {@link #prepare()} instead.
+   */
   @Deprecated
   @Override
   public void retry() {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * @deprecated Use {@link #setMediaSource(MediaSource)} and {@link #prepare()} instead.
+   */
   @Deprecated
   @Override
   public void prepare(MediaSource mediaSource) {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * @deprecated Use {@link #setMediaSource(MediaSource, boolean)} and {@link #prepare()} instead.
+   */
   @Deprecated
   @Override
   public void prepare(MediaSource mediaSource, boolean resetPosition, boolean resetState) {
@@ -292,8 +310,31 @@ public class StubExoPlayer extends StubPlayer implements ExoPlayer {
   }
 
   @Override
+  public Renderer getRenderer(int index) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   @Nullable
   public TrackSelector getTrackSelector() {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * @deprecated Use {@link #getCurrentTracks()}.
+   */
+  @Deprecated
+  @Override
+  public TrackGroupArray getCurrentTrackGroups() {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * @deprecated Use {@link #getCurrentTracks()}.
+   */
+  @Deprecated
+  @Override
+  public TrackSelectionArray getCurrentTrackSelections() {
     throw new UnsupportedOperationException();
   }
 
@@ -341,6 +382,9 @@ public class StubExoPlayer extends StubPlayer implements ExoPlayer {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * @deprecated Use {@link #setWakeMode(int)} instead.
+   */
   @Deprecated
   @Override
   public void setHandleWakeLock(boolean handleWakeLock) {
@@ -354,12 +398,6 @@ public class StubExoPlayer extends StubPlayer implements ExoPlayer {
 
   @Override
   public void setPriorityTaskManager(@Nullable PriorityTaskManager priorityTaskManager) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Deprecated
-  @Override
-  public void setThrowsWhenUsingWrongThread(boolean throwsWhenUsingWrongThread) {
     throw new UnsupportedOperationException();
   }
 

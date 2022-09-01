@@ -15,6 +15,12 @@
  */
 package com.google.android.exoplayer2;
 
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.LOCAL_VARIABLE;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.ElementType.TYPE_USE;
+
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.text.TextUtils;
@@ -25,12 +31,12 @@ import com.google.android.exoplayer2.C.FormatSupport;
 import com.google.android.exoplayer2.source.MediaPeriodId;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.util.Assertions;
-import com.google.android.exoplayer2.util.BundleableUtil;
 import com.google.android.exoplayer2.util.Util;
 import java.io.IOException;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /** Thrown when a non locally recoverable playback failure occurs. */
 public final class ExoPlaybackException extends PlaybackException {
@@ -40,8 +46,11 @@ public final class ExoPlaybackException extends PlaybackException {
    * {@link #TYPE_UNEXPECTED} or {@link #TYPE_REMOTE}. Note that new types may be added in the
    * future and error handling should handle unknown type values.
    */
+  // @Target list includes both 'default' targets and TYPE_USE, to ensure backwards compatibility
+  // with Kotlin usages from before TYPE_USE was added.
   @Documented
   @Retention(RetentionPolicy.SOURCE)
+  @Target({FIELD, METHOD, PARAMETER, LOCAL_VARIABLE, TYPE_USE})
   @IntDef({TYPE_SOURCE, TYPE_RENDERER, TYPE_UNEXPECTED, TYPE_REMOTE})
   public @interface Type {}
   /**
@@ -70,7 +79,7 @@ public final class ExoPlaybackException extends PlaybackException {
   public static final int TYPE_REMOTE = 3;
 
   /** The {@link Type} of the playback failure. */
-  @Type public final int type;
+  public final @Type int type;
 
   /** If {@link #type} is {@link #TYPE_RENDERER}, this is the name of the renderer. */
   @Nullable public final String rendererName;
@@ -89,7 +98,7 @@ public final class ExoPlaybackException extends PlaybackException {
    * renderer for {@link #rendererFormat}. If {@link #rendererFormat} is null, this is {@link
    * C#FORMAT_HANDLED}.
    */
-  @FormatSupport public final int rendererFormatSupport;
+  public final @FormatSupport int rendererFormatSupport;
 
   /** The {@link MediaPeriodId} of the media associated with this error, or null if undetermined. */
   @Nullable public final MediaPeriodId mediaPeriodId;
@@ -235,9 +244,9 @@ public final class ExoPlaybackException extends PlaybackException {
     rendererName = bundle.getString(keyForField(FIELD_RENDERER_NAME));
     rendererIndex =
         bundle.getInt(keyForField(FIELD_RENDERER_INDEX), /* defaultValue= */ C.INDEX_UNSET);
+    @Nullable Bundle rendererFormatBundle = bundle.getBundle(keyForField(FIELD_RENDERER_FORMAT));
     rendererFormat =
-        BundleableUtil.fromNullableBundle(
-            Format.CREATOR, bundle.getBundle(keyForField(FIELD_RENDERER_FORMAT)));
+        rendererFormatBundle == null ? null : Format.CREATOR.fromBundle(rendererFormatBundle);
     rendererFormatSupport =
         bundle.getInt(
             keyForField(FIELD_RENDERER_FORMAT_SUPPORT), /* defaultValue= */ C.FORMAT_HANDLED);
@@ -399,8 +408,9 @@ public final class ExoPlaybackException extends PlaybackException {
     bundle.putInt(keyForField(FIELD_TYPE), type);
     bundle.putString(keyForField(FIELD_RENDERER_NAME), rendererName);
     bundle.putInt(keyForField(FIELD_RENDERER_INDEX), rendererIndex);
-    bundle.putBundle(
-        keyForField(FIELD_RENDERER_FORMAT), BundleableUtil.toNullableBundle(rendererFormat));
+    if (rendererFormat != null) {
+      bundle.putBundle(keyForField(FIELD_RENDERER_FORMAT), rendererFormat.toBundle());
+    }
     bundle.putInt(keyForField(FIELD_RENDERER_FORMAT_SUPPORT), rendererFormatSupport);
     bundle.putBoolean(keyForField(FIELD_IS_RECOVERABLE), isRecoverable);
     return bundle;

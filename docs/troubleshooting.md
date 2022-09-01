@@ -6,7 +6,7 @@ redirect_from:
 ---
 
 * [Fixing "Cleartext HTTP traffic not permitted" errors][]
-* [Fixing "SSLHandshakeException" and "CertPathValidatorException" errors][]
+* [Fixing "SSLHandshakeException", "CertPathValidatorException" and "ERR_CERT_AUTHORITY_INVALID" errors][]
 * [Why are some media files not seekable?][]
 * [Why is seeking inaccurate in some MP3 files?][]
 * [Why do some MPEG-TS files fail to play?][]
@@ -22,6 +22,7 @@ redirect_from:
 * [Why does content fail to play, but no error is surfaced?]
 * [How can I get a decoding extension to load and be used for playback?][]
 * [Can I play YouTube videos directly with ExoPlayer?][]
+* [Video playback is stuttering][]
 
 ---
 
@@ -43,11 +44,11 @@ The ExoPlayer demo app uses the default Network Security Configuration, and so
 does not allow cleartext HTTP traffic. You can enable it using the instructions
 above.
 
-#### Fixing "SSLHandshakeException" and "CertPathValidatorException" errors ####
+#### Fixing "SSLHandshakeException", "CertPathValidatorException" and "ERR_CERT_AUTHORITY_INVALID" errors ####
 
-`SSLHandshakeException` and `CertPathValidatorException` both indicate a problem
-with the server's SSL certificate. These errors are not ExoPlayer specific.
-Please see
+`SSLHandshakeException`, `CertPathValidatorException` and
+`ERR_CERT_AUTHORITY_INVALID` all indicate a problem with the server's SSL
+certificate. These errors are not ExoPlayer specific. Please see
 [Android's SSL documentation](https://developer.android.com/training/articles/security-ssl#CommonProblems)
 for more details.
 
@@ -164,7 +165,7 @@ from HTTPS to HTTP and so is a cross-protocol redirect. ExoPlayer will not
 follow this redirect in its default configuration, meaning playback will fail.
 
 If you need to, you can configure ExoPlayer to follow cross-protocol redirects
-when instantiating `DefaultHttpDataSourceFactory` instances used in your
+when instantiating [`DefaultHttpDataSource.Factory`][] instances used in your
 application. Learn about selecting and configuring the network stack
 [here]({{ site.base_url }}/customization.html#configuring-the-network-stack).
 
@@ -293,8 +294,18 @@ No, ExoPlayer cannot play videos from YouTube, i.e., urls of the form
 Android Player API](https://developers.google.com/youtube/android/player/) which
 is the official way to play YouTube videos on Android.
 
+#### Video playback is stuttering ###
+
+The device may not be able to decode the content fast enough if, for example,
+the content bitrate or resolution exceeds the device capabilities. You may need
+to use lower quality content to obtain good performance on such devices.
+
+If you're experiencing video stuttering on a device running Android 6 to 11,
+particularly when playing DRM protected or high frame rate content, you can try
+[enabling asynchronous buffer queueing].
+
 [Fixing "Cleartext HTTP traffic not permitted" errors]: #fixing-cleartext-http-traffic-not-permitted-errors
-[Fixing "SSLHandshakeException" and "CertPathValidatorException" errors]: #fixing-sslhandshakeexception-and-certpathvalidatorexception-errors
+[Fixing "SSLHandshakeException", "CertPathValidatorException" and "ERR_CERT_AUTHORITY_INVALID" errors]: #fixing-sslhandshakeexception-certpathvalidatorexception-and-err_cert_authority_invalid-errors
 [What formats does ExoPlayer support?]: #what-formats-does-exoplayer-support
 [Why are some media files not seekable?]: #why-are-some-media-files-not-seekable
 [Why is seeking inaccurate in some MP3 files?]: #why-is-seeking-inaccurate-in-some-mp3-files
@@ -311,7 +322,7 @@ is the official way to play YouTube videos on Android.
 [Why does content fail to play, but no error is surfaced?]: #why-does-content-fail-to-play-but-no-error-is-surfaced
 [How can I get a decoding extension to load and be used for playback?]: #how-can-i-get-a-decoding-extension-to-load-and-be-used-for-playback
 [Can I play YouTube videos directly with ExoPlayer?]: #can-i-play-youtube-videos-directly-with-exoplayer
-
+[Video playback is stuttering]: #video-playback-is-stuttering
 
 [Supported formats]: {{ site.baseurl }}/supported-formats.html
 [set on a `DefaultExtractorsFactory`]: {{ site.base_url }}/customization.html#customizing-extractor-flags
@@ -326,7 +337,7 @@ is the official way to play YouTube videos on Android.
 [`setFragmentedMp4ExtractorFlags`]: {{ site.exo_sdk }}/extractor/DefaultExtractorsFactory#setFragmentedMp4ExtractorFlags(int)
 [Wikipedia]: https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
 [wget]: https://www.gnu.org/software/wget/manual/wget.html
-[`DefaultHttpDataSourceFactory`]: {{ site.exo_sdk }}/upstream/DefaultHttpDataSourceFactory.html
+[`DefaultHttpDataSource.Factory`]: {{ site.exo_sdk }}/upstream/DefaultHttpDataSource.Factory.html
 [ExoPlayer module]: {{ site.base_url }}/hello-world.html#add-exoplayer-modules
 [issue tracker]: https://github.com/google/ExoPlayer/issues
 [`isCurrentWindowLive`]: {{ site.exo_sdk }}/Player.html#isCurrentWindowLive()
@@ -349,3 +360,4 @@ is the official way to play YouTube videos on Android.
 [`DefaultRenderersFactory`]: {{ site.exo_sdk }}/DefaultRenderersFactory.html
 [`LibraryLoader`]: {{ site.exo_sdk }}/util/LibraryLoader.html
 [`EventLogger`]: {{ site.baseurl }}/debug-logging.html
+[enabling asynchronous buffer queueing]: {{ site.baseurl }}/customization.html#enabling-asynchronous-buffer-queueing

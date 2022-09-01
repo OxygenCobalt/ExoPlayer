@@ -28,6 +28,10 @@ android {
         }
     }
 
+    lint {
+        baseline = file("lint-baseline.xml")
+    }
+
     sourceSets {
         androidTest.assets.srcDir '../../testdata/src/test/assets/'
         test.assets.srcDir '../../testdata/src/test/assets/'
@@ -47,6 +51,7 @@ dependencies {
     compileOnly 'org.checkerframework:checker-qual:' + checkerframeworkVersion
     compileOnly 'org.checkerframework:checker-compat-qual:' + checkerframeworkCompatVersion
     compileOnly 'org.jetbrains.kotlin:kotlin-annotations-jvm:' + kotlinAnnotationsVersion
+    compileOnly 'com.google.errorprone:error_prone_annotations:' + errorProneVersion
     androidTestImplementation 'androidx.test:runner:' + androidxTestRunnerVersion
     androidTestImplementation 'com.linkedin.dexmaker:dexmaker:' + dexmakerVersion
     androidTestImplementation 'com.linkedin.dexmaker:dexmaker-mockito:' + dexmakerVersion

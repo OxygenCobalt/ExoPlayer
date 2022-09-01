@@ -20,6 +20,7 @@ com.google.android.exoplayer2.ext.vp9
 com.google.android.exoplayer2.ext.workmanager
 com.google.android.exoplayer2.extractor
 com.google.android.exoplayer2.extractor.amr
+com.google.android.exoplayer2.extractor.avi
 com.google.android.exoplayer2.extractor.flac
 com.google.android.exoplayer2.extractor.flv
 com.google.android.exoplayer2.extractor.jpeg
@@ -27,7 +28,6 @@ com.google.android.exoplayer2.extractor.mkv
 com.google.android.exoplayer2.extractor.mp3
 com.google.android.exoplayer2.extractor.mp4
 com.google.android.exoplayer2.extractor.ogg
-com.google.android.exoplayer2.extractor.rawcc
 com.google.android.exoplayer2.extractor.ts
 com.google.android.exoplayer2.extractor.wav
 com.google.android.exoplayer2.mediacodec
@@ -39,6 +39,7 @@ com.google.android.exoplayer2.metadata.icy
 com.google.android.exoplayer2.metadata.id3
 com.google.android.exoplayer2.metadata.mp4
 com.google.android.exoplayer2.metadata.scte35
+com.google.android.exoplayer2.metadata.vorbis
 com.google.android.exoplayer2.offline
 com.google.android.exoplayer2.robolectric
 com.google.android.exoplayer2.scheduler

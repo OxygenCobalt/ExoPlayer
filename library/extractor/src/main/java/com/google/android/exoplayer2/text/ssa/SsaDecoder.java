@@ -21,6 +21,7 @@ import static com.google.android.exoplayer2.util.Util.castNonNull;
 import android.graphics.Typeface;
 import android.text.Layout;
 import android.text.SpannableString;
+import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StrikethroughSpan;
 import android.text.style.StyleSpan;
@@ -319,6 +320,13 @@ public final class SsaDecoder extends SimpleSubtitleDecoder {
             /* end= */ spannableText.length(),
             SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
       }
+      if (style.borderStyle == SsaStyle.SSA_BORDER_STYLE_BOX && style.outlineColor != null) {
+        spannableText.setSpan(
+            new BackgroundColorSpan(style.outlineColor),
+            /* start= */ 0,
+            /* end= */ spannableText.length(),
+            SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+      }
       if (style.fontSize != Cue.DIMEN_UNSET && screenHeight != Cue.DIMEN_UNSET) {
         cue.setTextSize(
             style.fontSize / screenHeight, Cue.TEXT_SIZE_TYPE_FRACTIONAL_IGNORE_PADDING);
@@ -407,8 +415,7 @@ public final class SsaDecoder extends SimpleSubtitleDecoder {
     }
   }
 
-  @Cue.AnchorType
-  private static int toLineAnchor(@SsaStyle.SsaAlignment int alignment) {
+  private static @Cue.AnchorType int toLineAnchor(@SsaStyle.SsaAlignment int alignment) {
     switch (alignment) {
       case SsaStyle.SSA_ALIGNMENT_BOTTOM_LEFT:
       case SsaStyle.SSA_ALIGNMENT_BOTTOM_CENTER:
@@ -430,8 +437,7 @@ public final class SsaDecoder extends SimpleSubtitleDecoder {
     }
   }
 
-  @Cue.AnchorType
-  private static int toPositionAnchor(@SsaStyle.SsaAlignment int alignment) {
+  private static @Cue.AnchorType int toPositionAnchor(@SsaStyle.SsaAlignment int alignment) {
     switch (alignment) {
       case SsaStyle.SSA_ALIGNMENT_BOTTOM_LEFT:
       case SsaStyle.SSA_ALIGNMENT_MIDDLE_LEFT:

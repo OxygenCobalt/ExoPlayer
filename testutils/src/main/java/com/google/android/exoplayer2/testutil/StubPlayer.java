@@ -29,11 +29,9 @@ import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.TracksInfo;
+import com.google.android.exoplayer2.Tracks;
 import com.google.android.exoplayer2.audio.AudioAttributes;
-import com.google.android.exoplayer2.source.TrackGroupArray;
-import com.google.android.exoplayer2.text.Cue;
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.text.CueGroup;
 import com.google.android.exoplayer2.trackselection.TrackSelectionParameters;
 import com.google.android.exoplayer2.video.VideoSize;
 import java.util.List;
@@ -60,18 +58,17 @@ public class StubPlayer extends BasePlayer {
   }
 
   @Override
-  @State
-  public int getPlaybackState() {
+  public @State int getPlaybackState() {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  @PlaybackSuppressionReason
-  public int getPlaybackSuppressionReason() {
+  public @PlaybackSuppressionReason int getPlaybackSuppressionReason() {
     throw new UnsupportedOperationException();
   }
 
   @Override
+  @Nullable
   public PlaybackException getPlayerError() {
     throw new UnsupportedOperationException();
   }
@@ -181,6 +178,11 @@ public class StubPlayer extends BasePlayer {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * @deprecated Use {@link #stop()} and {@link #clearMediaItems()} (if {@code reset} is true) or
+   *     just {@link #stop()} (if {@code reset} is false). Any player error will be cleared when
+   *     {@link #prepare() re-preparing} the player.
+   */
   @Deprecated
   @Override
   public void stop(boolean reset) {
@@ -193,17 +195,7 @@ public class StubPlayer extends BasePlayer {
   }
 
   @Override
-  public TrackGroupArray getCurrentTrackGroups() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public TrackSelectionArray getCurrentTrackSelections() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public TracksInfo getCurrentTracksInfo() {
+  public Tracks getCurrentTracks() {
     throw new UnsupportedOperationException();
   }
 
@@ -358,7 +350,7 @@ public class StubPlayer extends BasePlayer {
   }
 
   @Override
-  public List<Cue> getCurrentCues() {
+  public CueGroup getCurrentCues() {
     throw new UnsupportedOperationException();
   }
 

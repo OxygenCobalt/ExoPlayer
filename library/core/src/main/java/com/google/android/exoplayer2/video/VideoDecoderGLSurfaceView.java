@@ -24,6 +24,7 @@ import android.util.AttributeSet;
 import androidx.annotation.Nullable;
 import com.google.android.exoplayer2.decoder.VideoDecoderOutputBuffer;
 import com.google.android.exoplayer2.util.Assertions;
+import com.google.android.exoplayer2.util.GlProgram;
 import com.google.android.exoplayer2.util.GlUtil;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -47,7 +48,9 @@ public final class VideoDecoderGLSurfaceView extends GLSurfaceView
 
   private final Renderer renderer;
 
-  /** @param context A {@link Context}. */
+  /**
+   * @param context A {@link Context}.
+   */
   public VideoDecoderGLSurfaceView(Context context) {
     this(context, /* attrs= */ null);
   }
@@ -71,7 +74,9 @@ public final class VideoDecoderGLSurfaceView extends GLSurfaceView
     renderer.setOutputBuffer(outputBuffer);
   }
 
-  /** @deprecated This class implements {@link VideoDecoderOutputBufferRenderer} directly. */
+  /**
+   * @deprecated This class implements {@link VideoDecoderOutputBufferRenderer} directly.
+   */
   @Deprecated
   public VideoDecoderOutputBufferRenderer getVideoDecoderOutputBufferRenderer() {
     return this;
@@ -144,7 +149,7 @@ public final class VideoDecoderGLSurfaceView extends GLSurfaceView
     // glDrawArrays uses it.
     private final FloatBuffer[] textureCoords;
 
-    private GlUtil.@MonotonicNonNull Program program;
+    private @MonotonicNonNull GlProgram program;
     private int colorMatrixLocation;
 
     // Accessed only from the GL thread.
@@ -165,10 +170,8 @@ public final class VideoDecoderGLSurfaceView extends GLSurfaceView
 
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
-      program = new GlUtil.Program(VERTEX_SHADER, FRAGMENT_SHADER);
-      program.use();
-      int posLocation = program.getAttribLocation("in_pos");
-      GLES20.glEnableVertexAttribArray(posLocation);
+      program = new GlProgram(VERTEX_SHADER, FRAGMENT_SHADER);
+      int posLocation = program.getAttributeArrayLocationAndEnable("in_pos");
       GLES20.glVertexAttribPointer(
           posLocation,
           2,
@@ -176,13 +179,9 @@ public final class VideoDecoderGLSurfaceView extends GLSurfaceView
           /* normalized= */ false,
           /* stride= */ 0,
           TEXTURE_VERTICES);
-      texLocations[0] = program.getAttribLocation("in_tc_y");
-      GLES20.glEnableVertexAttribArray(texLocations[0]);
-      texLocations[1] = program.getAttribLocation("in_tc_u");
-      GLES20.glEnableVertexAttribArray(texLocations[1]);
-      texLocations[2] = program.getAttribLocation("in_tc_v");
-      GLES20.glEnableVertexAttribArray(texLocations[2]);
-      GlUtil.checkGlError();
+      texLocations[0] = program.getAttributeArrayLocationAndEnable("in_tc_y");
+      texLocations[1] = program.getAttributeArrayLocationAndEnable("in_tc_u");
+      texLocations[2] = program.getAttributeArrayLocationAndEnable("in_tc_v");
       colorMatrixLocation = program.getUniformLocation("mColorConversion");
       GlUtil.checkGlError();
       setupTextures();
@@ -255,9 +254,9 @@ public final class VideoDecoderGLSurfaceView extends GLSurfaceView
 
       int[] widths = new int[3];
       widths[0] = outputBuffer.width;
-      // TODO: Handle streams where chroma channels are not stored at half width and height
-      // compared to luma channel. See [Internal: b/142097774].
-      // U and V planes are being stored at half width compared to Y.
+      // TODO(b/142097774): Handle streams where chroma channels are not stored at half width and
+      // height compared to the luma channel. U and V planes are being stored at half width compared
+      // to Y.
       widths[1] = widths[2] = (widths[0] + 1) / 2;
       for (int i = 0; i < 3; i++) {
         // Set cropping of stride if either width or stride has changed.
@@ -299,19 +298,11 @@ public final class VideoDecoderGLSurfaceView extends GLSurfaceView
 
     @RequiresNonNull("program")
     private void setupTextures() {
-      GLES20.glGenTextures(3, yuvTextures, /* offset= */ 0);
+      GLES20.glGenTextures(/* n= */ 3, yuvTextures, /* offset= */ 0);
       for (int i = 0; i < 3; i++) {
         GLES20.glUniform1i(program.getUniformLocation(TEXTURE_UNIFORMS[i]), i);
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + i);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, yuvTextures[i]);
-        GLES20.glTexParameterf(
-            GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameterf(
-            GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameterf(
-            GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameterf(
-            GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+        GlUtil.bindTexture(GLES20.GL_TEXTURE_2D, yuvTextures[i]);
       }
       GlUtil.checkGlError();
     }

@@ -15,6 +15,8 @@
  */
 package com.google.android.exoplayer2;
 
+import static java.lang.annotation.ElementType.TYPE_USE;
+
 import android.os.Bundle;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
@@ -28,6 +30,7 @@ import com.google.common.base.Joiner;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -155,14 +158,14 @@ public final class Format implements Bundleable {
     private int rotationDegrees;
     private float pixelWidthHeightRatio;
     @Nullable private byte[] projectionData;
-    @C.StereoMode private int stereoMode;
+    private @C.StereoMode int stereoMode;
     @Nullable private ColorInfo colorInfo;
 
     // Audio specific.
 
     private int channelCount;
     private int sampleRate;
-    @C.PcmEncoding private int pcmEncoding;
+    private @C.PcmEncoding int pcmEncoding;
     private int encoderDelay;
     private int encoderPadding;
 
@@ -172,7 +175,7 @@ public final class Format implements Bundleable {
 
     // Provided by the source.
 
-    @C.CryptoType private int cryptoType;
+    private @C.CryptoType int cryptoType;
 
     /** Creates a new instance with default values. */
     public Builder() {
@@ -631,7 +634,8 @@ public final class Format implements Bundleable {
    * <ul>
    *   <li>DASH representations: Always {@link Format#NO_VALUE}.
    *   <li>HLS variants: The {@code AVERAGE-BANDWIDTH} attribute defined on the corresponding {@code
-   *       EXT-X-STREAM-INF} tag in the master playlist, or {@link Format#NO_VALUE} if not present.
+   *       EXT-X-STREAM-INF} tag in the multivariant playlist, or {@link Format#NO_VALUE} if not
+   *       present.
    *   <li>SmoothStreaming track elements: The {@code Bitrate} attribute defined on the
    *       corresponding {@code TrackElement} in the manifest, or {@link Format#NO_VALUE} if not
    *       present.
@@ -725,7 +729,7 @@ public final class Format implements Bundleable {
    * modes are {@link C#STEREO_MODE_MONO}, {@link C#STEREO_MODE_TOP_BOTTOM}, {@link
    * C#STEREO_MODE_LEFT_RIGHT}, {@link C#STEREO_MODE_STEREO_MESH}.
    */
-  @C.StereoMode public final int stereoMode;
+  public final @C.StereoMode int stereoMode;
   /** The color metadata associated with the video, or null if not applicable. */
   @Nullable public final ColorInfo colorInfo;
 
@@ -736,7 +740,7 @@ public final class Format implements Bundleable {
   /** The audio sampling rate in Hz, or {@link #NO_VALUE} if unknown or not applicable. */
   public final int sampleRate;
   /** The {@link C.PcmEncoding} for PCM audio. Set to {@link #NO_VALUE} for other media types. */
-  @C.PcmEncoding public final int pcmEncoding;
+  public final @C.PcmEncoding int pcmEncoding;
   /**
    * The number of frames to trim from the start of the decoded audio stream, or 0 if not
    * applicable.
@@ -760,14 +764,16 @@ public final class Format implements Bundleable {
    * {@link #drmInitData} is non-null, but may be {@link C#CRYPTO_TYPE_UNSUPPORTED} to indicate that
    * the samples are encrypted using an unsupported crypto type.
    */
-  @C.CryptoType public final int cryptoType;
+  public final @C.CryptoType int cryptoType;
 
   // Lazily initialized hashcode.
   private int hashCode;
 
   // Video.
 
-  /** @deprecated Use {@link Format.Builder}. */
+  /**
+   * @deprecated Use {@link Format.Builder}.
+   */
   @Deprecated
   public static Format createVideoSampleFormat(
       @Nullable String id,
@@ -795,7 +801,9 @@ public final class Format implements Bundleable {
         .build();
   }
 
-  /** @deprecated Use {@link Format.Builder}. */
+  /**
+   * @deprecated Use {@link Format.Builder}.
+   */
   @Deprecated
   public static Format createVideoSampleFormat(
       @Nullable String id,
@@ -829,7 +837,9 @@ public final class Format implements Bundleable {
 
   // Audio.
 
-  /** @deprecated Use {@link Format.Builder}. */
+  /**
+   * @deprecated Use {@link Format.Builder}.
+   */
   @Deprecated
   public static Format createAudioSampleFormat(
       @Nullable String id,
@@ -859,7 +869,9 @@ public final class Format implements Bundleable {
         .build();
   }
 
-  /** @deprecated Use {@link Format.Builder}. */
+  /**
+   * @deprecated Use {@link Format.Builder}.
+   */
   @Deprecated
   public static Format createAudioSampleFormat(
       @Nullable String id,
@@ -893,7 +905,9 @@ public final class Format implements Bundleable {
 
   // Generic.
 
-  /** @deprecated Use {@link Format.Builder}. */
+  /**
+   * @deprecated Use {@link Format.Builder}.
+   */
   @Deprecated
   public static Format createContainerFormat(
       @Nullable String id,
@@ -919,7 +933,9 @@ public final class Format implements Bundleable {
         .build();
   }
 
-  /** @deprecated Use {@link Format.Builder}. */
+  /**
+   * @deprecated Use {@link Format.Builder}.
+   */
   @Deprecated
   public static Format createSampleFormat(@Nullable String id, @Nullable String sampleMimeType) {
     return new Builder().setId(id).setSampleMimeType(sampleMimeType).build();
@@ -977,25 +993,33 @@ public final class Format implements Bundleable {
     return new Builder(this);
   }
 
-  /** @deprecated Use {@link #buildUpon()} and {@link Builder#setMaxInputSize(int)}. */
+  /**
+   * @deprecated Use {@link #buildUpon()} and {@link Builder#setMaxInputSize(int)}.
+   */
   @Deprecated
   public Format copyWithMaxInputSize(int maxInputSize) {
     return buildUpon().setMaxInputSize(maxInputSize).build();
   }
 
-  /** @deprecated Use {@link #buildUpon()} and {@link Builder#setSubsampleOffsetUs(long)}. */
+  /**
+   * @deprecated Use {@link #buildUpon()} and {@link Builder#setSubsampleOffsetUs(long)}.
+   */
   @Deprecated
   public Format copyWithSubsampleOffsetUs(long subsampleOffsetUs) {
     return buildUpon().setSubsampleOffsetUs(subsampleOffsetUs).build();
   }
 
-  /** @deprecated Use {@link #buildUpon()} and {@link Builder#setLabel(String)} . */
+  /**
+   * @deprecated Use {@link #buildUpon()} and {@link Builder#setLabel(String)} .
+   */
   @Deprecated
   public Format copyWithLabel(@Nullable String label) {
     return buildUpon().setLabel(label).build();
   }
 
-  /** @deprecated Use {@link #withManifestFormatInfo(Format)}. */
+  /**
+   * @deprecated Use {@link #withManifestFormatInfo(Format)}.
+   */
   @Deprecated
   public Format copyWithManifestFormatInfo(Format manifestFormat) {
     return withManifestFormatInfo(manifestFormat);
@@ -1077,19 +1101,25 @@ public final class Format implements Bundleable {
     return buildUpon().setEncoderDelay(encoderDelay).setEncoderPadding(encoderPadding).build();
   }
 
-  /** @deprecated Use {@link #buildUpon()} and {@link Builder#setFrameRate(float)}. */
+  /**
+   * @deprecated Use {@link #buildUpon()} and {@link Builder#setFrameRate(float)}.
+   */
   @Deprecated
   public Format copyWithFrameRate(float frameRate) {
     return buildUpon().setFrameRate(frameRate).build();
   }
 
-  /** @deprecated Use {@link #buildUpon()} and {@link Builder#setDrmInitData(DrmInitData)}. */
+  /**
+   * @deprecated Use {@link #buildUpon()} and {@link Builder#setDrmInitData(DrmInitData)}.
+   */
   @Deprecated
   public Format copyWithDrmInitData(@Nullable DrmInitData drmInitData) {
     return buildUpon().setDrmInitData(drmInitData).build();
   }
 
-  /** @deprecated Use {@link #buildUpon()} and {@link Builder#setMetadata(Metadata)}. */
+  /**
+   * @deprecated Use {@link #buildUpon()} and {@link Builder#setMetadata(Metadata)}.
+   */
   @Deprecated
   public Format copyWithMetadata(@Nullable Metadata metadata) {
     return buildUpon().setMetadata(metadata).build();
@@ -1300,7 +1330,9 @@ public final class Format implements Bundleable {
           schemes.add("unknown (" + schemeUuid + ")");
         }
       }
-      builder.append(", drm=[").append(Joiner.on(',').join(schemes)).append(']');
+      builder.append(", drm=[");
+      Joiner.on(',').appendTo(builder, schemes);
+      builder.append(']');
     }
     if (format.width != NO_VALUE && format.height != NO_VALUE) {
       builder.append(", res=").append(format.width).append("x").append(format.height);
@@ -1320,8 +1352,73 @@ public final class Format implements Bundleable {
     if (format.label != null) {
       builder.append(", label=").append(format.label);
     }
-    if ((format.roleFlags & C.ROLE_FLAG_TRICK_PLAY) != 0) {
-      builder.append(", trick-play-track");
+    if (format.selectionFlags != 0) {
+      List<String> selectionFlags = new ArrayList<>();
+      // LINT.IfChange(selection_flags)
+      if ((format.selectionFlags & C.SELECTION_FLAG_AUTOSELECT) != 0) {
+        selectionFlags.add("auto");
+      }
+      if ((format.selectionFlags & C.SELECTION_FLAG_DEFAULT) != 0) {
+        selectionFlags.add("default");
+      }
+      if ((format.selectionFlags & C.SELECTION_FLAG_FORCED) != 0) {
+        selectionFlags.add("forced");
+      }
+      builder.append(", selectionFlags=[");
+      Joiner.on(',').appendTo(builder, selectionFlags);
+      builder.append("]");
+    }
+    if (format.roleFlags != 0) {
+      // LINT.IfChange(role_flags)
+      List<String> roleFlags = new ArrayList<>();
+      if ((format.roleFlags & C.ROLE_FLAG_MAIN) != 0) {
+        roleFlags.add("main");
+      }
+      if ((format.roleFlags & C.ROLE_FLAG_ALTERNATE) != 0) {
+        roleFlags.add("alt");
+      }
+      if ((format.roleFlags & C.ROLE_FLAG_SUPPLEMENTARY) != 0) {
+        roleFlags.add("supplementary");
+      }
+      if ((format.roleFlags & C.ROLE_FLAG_COMMENTARY) != 0) {
+        roleFlags.add("commentary");
+      }
+      if ((format.roleFlags & C.ROLE_FLAG_DUB) != 0) {
+        roleFlags.add("dub");
+      }
+      if ((format.roleFlags & C.ROLE_FLAG_EMERGENCY) != 0) {
+        roleFlags.add("emergency");
+      }
+      if ((format.roleFlags & C.ROLE_FLAG_CAPTION) != 0) {
+        roleFlags.add("caption");
+      }
+      if ((format.roleFlags & C.ROLE_FLAG_SUBTITLE) != 0) {
+        roleFlags.add("subtitle");
+      }
+      if ((format.roleFlags & C.ROLE_FLAG_SIGN) != 0) {
+        roleFlags.add("sign");
+      }
+      if ((format.roleFlags & C.ROLE_FLAG_DESCRIBES_VIDEO) != 0) {
+        roleFlags.add("describes-video");
+      }
+      if ((format.roleFlags & C.ROLE_FLAG_DESCRIBES_MUSIC_AND_SOUND) != 0) {
+        roleFlags.add("describes-music");
+      }
+      if ((format.roleFlags & C.ROLE_FLAG_ENHANCED_DIALOG_INTELLIGIBILITY) != 0) {
+        roleFlags.add("enhanced-intelligibility");
+      }
+      if ((format.roleFlags & C.ROLE_FLAG_TRANSCRIBES_DIALOG) != 0) {
+        roleFlags.add("transcribes-dialog");
+      }
+      if ((format.roleFlags & C.ROLE_FLAG_EASY_TO_READ) != 0) {
+        roleFlags.add("easy-read");
+      }
+      if ((format.roleFlags & C.ROLE_FLAG_TRICK_PLAY) != 0) {
+        roleFlags.add("trick-play");
+      }
+      builder.append(", roleFlags=[");
+      Joiner.on(',').appendTo(builder, roleFlags);
+      builder.append("]");
     }
     return builder.toString();
   }
@@ -1329,6 +1426,7 @@ public final class Format implements Bundleable {
   // Bundleable implementation.
   @Documented
   @Retention(RetentionPolicy.SOURCE)
+  @Target(TYPE_USE)
   @IntDef({
     FIELD_ID,
     FIELD_LABEL,
@@ -1429,7 +1527,9 @@ public final class Format implements Bundleable {
     bundle.putFloat(keyForField(FIELD_PIXEL_WIDTH_HEIGHT_RATIO), pixelWidthHeightRatio);
     bundle.putByteArray(keyForField(FIELD_PROJECTION_DATA), projectionData);
     bundle.putInt(keyForField(FIELD_STEREO_MODE), stereoMode);
-    bundle.putBundle(keyForField(FIELD_COLOR_INFO), BundleableUtil.toNullableBundle(colorInfo));
+    if (colorInfo != null) {
+      bundle.putBundle(keyForField(FIELD_COLOR_INFO), colorInfo.toBundle());
+    }
     // Audio specific.
     bundle.putInt(keyForField(FIELD_CHANNEL_COUNT), channelCount);
     bundle.putInt(keyForField(FIELD_SAMPLE_RATE), sampleRate);
@@ -1496,11 +1596,13 @@ public final class Format implements Bundleable {
             bundle.getFloat(
                 keyForField(FIELD_PIXEL_WIDTH_HEIGHT_RATIO), DEFAULT.pixelWidthHeightRatio))
         .setProjectionData(bundle.getByteArray(keyForField(FIELD_PROJECTION_DATA)))
-        .setStereoMode(bundle.getInt(keyForField(FIELD_STEREO_MODE), DEFAULT.stereoMode))
-        .setColorInfo(
-            BundleableUtil.fromNullableBundle(
-                ColorInfo.CREATOR, bundle.getBundle(keyForField(FIELD_COLOR_INFO))))
-        // Audio specific.
+        .setStereoMode(bundle.getInt(keyForField(FIELD_STEREO_MODE), DEFAULT.stereoMode));
+    Bundle colorInfoBundle = bundle.getBundle(keyForField(FIELD_COLOR_INFO));
+    if (colorInfoBundle != null) {
+      builder.setColorInfo(ColorInfo.CREATOR.fromBundle(colorInfoBundle));
+    }
+    // Audio specific.
+    builder
         .setChannelCount(bundle.getInt(keyForField(FIELD_CHANNEL_COUNT), DEFAULT.channelCount))
         .setSampleRate(bundle.getInt(keyForField(FIELD_SAMPLE_RATE), DEFAULT.sampleRate))
         .setPcmEncoding(bundle.getInt(keyForField(FIELD_PCM_ENCODING), DEFAULT.pcmEncoding))

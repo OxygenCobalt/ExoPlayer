@@ -178,48 +178,42 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 </td>
 </tr>
 <tr class="rowColor">
-<th class="colFirst" scope="row"><a href="Player.EventListener.html" title="interface in com.google.android.exoplayer2">Player.EventListener</a></th>
-<td class="colLast">Deprecated.
-<div class="deprecationComment">Use <a href="Player.Listener.html" title="interface in com.google.android.exoplayer2"><code>Player.Listener</code></a>.</div>
-</td>
-</tr>
-<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Player.Listener.html" title="interface in com.google.android.exoplayer2">Player.Listener</a></th>
 <td class="colLast">
 <div class="block">Listener of all changes in the Player.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="PlayerMessage.Sender.html" title="interface in com.google.android.exoplayer2">PlayerMessage.Sender</a></th>
 <td class="colLast">
 <div class="block">A sender for messages.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="PlayerMessage.Target.html" title="interface in com.google.android.exoplayer2">PlayerMessage.Target</a></th>
 <td class="colLast">
 <div class="block">A target for messages.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Renderer.html" title="interface in com.google.android.exoplayer2">Renderer</a></th>
 <td class="colLast">
 <div class="block">Renders media read from a <a href="source/SampleStream.html" title="interface in com.google.android.exoplayer2.source"><code>SampleStream</code></a>.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="Renderer.WakeupListener.html" title="interface in com.google.android.exoplayer2">Renderer.WakeupListener</a></th>
 <td class="colLast">
 <div class="block">Some renderers can signal when <a href="Renderer.html#render(long,long)"><code>Renderer.render(long, long)</code></a> should be called.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="RendererCapabilities.html" title="interface in com.google.android.exoplayer2">RendererCapabilities</a></th>
 <td class="colLast">
 <div class="block">Defines the capabilities of a <a href="Renderer.html" title="interface in com.google.android.exoplayer2"><code>Renderer</code></a>.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="RenderersFactory.html" title="interface in com.google.android.exoplayer2">RenderersFactory</a></th>
 <td class="colLast">
 <div class="block">Builds <a href="Renderer.html" title="interface in com.google.android.exoplayer2"><code>Renderer</code></a> instances for use by an <a href="ExoPlayer.html" title="interface in com.google.android.exoplayer2"><code>ExoPlayer</code></a>.</div>
@@ -425,6 +419,18 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 </td>
 </tr>
 <tr class="rowColor">
+<th class="colFirst" scope="row"><a href="MediaItem.RequestMetadata.html" title="class in com.google.android.exoplayer2">MediaItem.RequestMetadata</a></th>
+<td class="colLast">
+<div class="block">Metadata that helps the player to understand a playback request represented by a <a href="MediaItem.html" title="class in com.google.android.exoplayer2"><code>MediaItem</code></a>.</div>
+</td>
+</tr>
+<tr class="altColor">
+<th class="colFirst" scope="row"><a href="MediaItem.RequestMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaItem.RequestMetadata.Builder</a></th>
+<td class="colLast">
+<div class="block">Builder for <a href="MediaItem.RequestMetadata.html" title="class in com.google.android.exoplayer2"><code>MediaItem.RequestMetadata</code></a> instances.</div>
+</td>
+</tr>
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="MediaItem.Subtitle.html" title="class in com.google.android.exoplayer2">MediaItem.Subtitle</a></th>
 <td class="colLast">Deprecated.
 <div class="deprecationComment">Use <a href="MediaItem.SubtitleConfiguration.html" title="class in com.google.android.exoplayer2"><code>MediaItem.SubtitleConfiguration</code></a> instead</div>
@@ -576,16 +582,17 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 </td>
 </tr>
 <tr class="altColor">
-<th class="colFirst" scope="row"><a href="TracksInfo.html" title="class in com.google.android.exoplayer2">TracksInfo</a></th>
+<th class="colFirst" scope="row"><a href="Tracks.html" title="class in com.google.android.exoplayer2">Tracks</a></th>
 <td class="colLast">
-<div class="block">Immutable information (<a href="TracksInfo.TrackGroupInfo.html" title="class in com.google.android.exoplayer2"><code>TracksInfo.TrackGroupInfo</code></a>) about tracks.</div>
+<div class="block">Information about groups of tracks.</div>
 </td>
 </tr>
 <tr class="rowColor">
-<th class="colFirst" scope="row"><a href="TracksInfo.TrackGroupInfo.html" title="class in com.google.android.exoplayer2">TracksInfo.TrackGroupInfo</a></th>
+<th class="colFirst" scope="row"><a href="Tracks.Group.html" title="class in com.google.android.exoplayer2">Tracks.Group</a></th>
 <td class="colLast">
-<div class="block">Information about tracks in a <a href="source/TrackGroup.html" title="class in com.google.android.exoplayer2.source"><code>TrackGroup</code></a>: their <a href="C.TrackType.html" title="annotation in com.google.android.exoplayer2"><code>C.TrackType</code></a>, if their format is
- supported by the player and if they are selected for playback.</div>
+<div class="block">Information about a single group of tracks, including the underlying <a href="source/TrackGroup.html" title="class in com.google.android.exoplayer2.source"><code>TrackGroup</code></a>, the
+ level to which each track is supported by the player, and whether any of the tracks are
+ selected.</div>
 </td>
 </tr>
 </tbody>
@@ -656,18 +663,6 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <th class="colFirst" scope="row"><a href="C.AudioFlags.html" title="annotation in com.google.android.exoplayer2">C.AudioFlags</a></th>
 <td class="colLast">
 <div class="block">Flags for audio attributes.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<th class="colFirst" scope="row"><a href="C.AudioFocusGain.html" title="annotation in com.google.android.exoplayer2">C.AudioFocusGain</a></th>
-<td class="colLast">
-<div class="block">Audio focus types.</div>
-</td>
-</tr>
-<tr class="altColor">
-<th class="colFirst" scope="row"><a href="C.AudioManagerOffloadMode.html" title="annotation in com.google.android.exoplayer2">C.AudioManagerOffloadMode</a></th>
-<td class="colLast">
-<div class="block">Playback offload mode.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -773,93 +768,93 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 </td>
 </tr>
 <tr class="altColor">
+<th class="colFirst" scope="row"><a href="C.SpatializationBehavior.html" title="annotation in com.google.android.exoplayer2">C.SpatializationBehavior</a></th>
+<td class="colLast">
+<div class="block">Represents the behavior affecting whether spatialization will be used.</div>
+</td>
+</tr>
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="C.StereoMode.html" title="annotation in com.google.android.exoplayer2">C.StereoMode</a></th>
 <td class="colLast">
 <div class="block">The stereo mode for 360/3D/VR videos.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="C.StreamType.html" title="annotation in com.google.android.exoplayer2">C.StreamType</a></th>
 <td class="colLast">
 <div class="block">Stream types for an <a href="https://developer.android.com/reference/android/media/AudioTrack.html" title="class or interface in android.media" class="externalLink" target="_top"><code>AudioTrack</code></a>.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="C.TrackType.html" title="annotation in com.google.android.exoplayer2">C.TrackType</a></th>
 <td class="colLast">
 <div class="block">Represents a type of media track.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="C.VideoChangeFrameRateStrategy.html" title="annotation in com.google.android.exoplayer2">C.VideoChangeFrameRateStrategy</a></th>
 <td class="colLast">
 <div class="block">Strategies for calling <a href="https://developer.android.com/reference/android/view/Surface.html#setFrameRate(float,int,int)" title="class or interface in android.view" class="externalLink" target="_top"><code>Surface.setFrameRate(float, int, int)</code></a>.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="C.VideoOutputMode.html" title="annotation in com.google.android.exoplayer2">C.VideoOutputMode</a></th>
 <td class="colLast">
 <div class="block">Video decoder output modes.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="C.VideoScalingMode.html" title="annotation in com.google.android.exoplayer2">C.VideoScalingMode</a></th>
 <td class="colLast">
 <div class="block">Video scaling modes for <a href="https://developer.android.com/reference/android/media/MediaCodec.html" title="class or interface in android.media" class="externalLink" target="_top"><code>MediaCodec</code></a>-based renderers.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="C.WakeMode.html" title="annotation in com.google.android.exoplayer2">C.WakeMode</a></th>
 <td class="colLast">
 <div class="block">Mode specifying whether the player should hold a WakeLock and a WifiLock.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="DefaultRenderersFactory.ExtensionRendererMode.html" title="annotation in com.google.android.exoplayer2">DefaultRenderersFactory.ExtensionRendererMode</a></th>
 <td class="colLast">
 <div class="block">Modes for using extension renderers.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="DeviceInfo.PlaybackType.html" title="annotation in com.google.android.exoplayer2">DeviceInfo.PlaybackType</a></th>
 <td class="colLast">
 <div class="block">Types of playback.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="ExoPlaybackException.Type.html" title="annotation in com.google.android.exoplayer2">ExoPlaybackException.Type</a></th>
 <td class="colLast">
 <div class="block">The type of source that produced the error.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="ExoTimeoutException.TimeoutOperation.html" title="annotation in com.google.android.exoplayer2">ExoTimeoutException.TimeoutOperation</a></th>
 <td class="colLast">
 <div class="block">The operation which produced the timeout error.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="MediaMetadata.FolderType.html" title="annotation in com.google.android.exoplayer2">MediaMetadata.FolderType</a></th>
 <td class="colLast">
 <div class="block">The folder type of the media item.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="MediaMetadata.PictureType.html" title="annotation in com.google.android.exoplayer2">MediaMetadata.PictureType</a></th>
 <td class="colLast">
 <div class="block">The picture type of the artwork.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="PlaybackException.ErrorCode.html" title="annotation in com.google.android.exoplayer2">PlaybackException.ErrorCode</a></th>
 <td class="colLast">
 <div class="block">Codes that identify causes of player errors.</div>
-</td>
-</tr>
-<tr class="altColor">
-<th class="colFirst" scope="row"><a href="PlaybackException.FieldNumber.html" title="annotation in com.google.android.exoplayer2">PlaybackException.FieldNumber</a></th>
-<td class="colLast">
-<div class="block">Identifiers for fields in a <a href="https://developer.android.com/reference/android/os/Bundle.html" title="class or interface in android.os" class="externalLink" target="_top"><code>Bundle</code></a> which represents a playback exception.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -941,9 +936,21 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 </td>
 </tr>
 <tr class="altColor">
+<th class="colFirst" scope="row"><a href="RendererCapabilities.DecoderSupport.html" title="annotation in com.google.android.exoplayer2">RendererCapabilities.DecoderSupport</a></th>
+<td class="colLast">
+<div class="block">Level of decoder support.</div>
+</td>
+</tr>
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="RendererCapabilities.FormatSupport.html" title="annotation in com.google.android.exoplayer2">RendererCapabilities.FormatSupport</a></th>
 <td class="colLast">Deprecated.
 <div class="deprecationComment">Use <a href="C.FormatSupport.html" title="annotation in com.google.android.exoplayer2"><code>C.FormatSupport</code></a> instead.</div>
+</td>
+</tr>
+<tr class="altColor">
+<th class="colFirst" scope="row"><a href="RendererCapabilities.HardwareAccelerationSupport.html" title="annotation in com.google.android.exoplayer2">RendererCapabilities.HardwareAccelerationSupport</a></th>
+<td class="colLast">
+<div class="block">Level of renderer support for hardware acceleration.</div>
 </td>
 </tr>
 <tr class="rowColor">

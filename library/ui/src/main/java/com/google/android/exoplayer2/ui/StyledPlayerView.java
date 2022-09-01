@@ -18,6 +18,7 @@ package com.google.android.exoplayer2.ui;
 import static com.google.android.exoplayer2.Player.COMMAND_GET_TEXT;
 import static com.google.android.exoplayer2.Player.COMMAND_SET_VIDEO_SURFACE;
 import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
+import static java.lang.annotation.ElementType.TYPE_USE;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -42,6 +43,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+import androidx.annotation.ColorInt;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -53,8 +55,8 @@ import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.Player.DiscontinuityReason;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.Timeline.Period;
-import com.google.android.exoplayer2.TracksInfo;
-import com.google.android.exoplayer2.text.Cue;
+import com.google.android.exoplayer2.Tracks;
+import com.google.android.exoplayer2.text.CueGroup;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout.ResizeMode;
 import com.google.android.exoplayer2.util.Assertions;
 import com.google.android.exoplayer2.util.ErrorMessageProvider;
@@ -65,6 +67,7 @@ import com.google.common.collect.ImmutableList;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
@@ -75,8 +78,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
  * during playback, and displays playback controls using a {@link StyledPlayerControlView}.
  *
  * <p>A StyledPlayerView can be customized by setting attributes (or calling corresponding methods),
- * overriding drawables, overriding the view's layout file, or by specifying a custom view layout
- * file.
+ * or overriding drawables.
  *
  * <h2>Attributes</h2>
  *
@@ -152,22 +154,10 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
  *         <li>Corresponding method: {@link #setKeepContentOnPlayerReset(boolean)}
  *         <li>Default: {@code false}
  *       </ul>
- *   <li><b>{@code player_layout_id}</b> - Specifies the id of the layout to be inflated. See below
- *       for more details.
- *       <ul>
- *         <li>Corresponding method: None
- *         <li>Default: {@code R.layout.exo_styled_player_view}
- *       </ul>
- *   <li><b>{@code controller_layout_id}</b> - Specifies the id of the layout resource to be
- *       inflated by the child {@link StyledPlayerControlView}. See below for more details.
- *       <ul>
- *         <li>Corresponding method: None
- *         <li>Default: {@code R.layout.exo_styled_player_control_view}
- *       </ul>
  *   <li>All attributes that can be set on {@link StyledPlayerControlView} and {@link
  *       DefaultTimeBar} can also be set on a StyledPlayerView, and will be propagated to the
  *       inflated {@link StyledPlayerControlView} unless the layout is overridden to specify a
- *       custom {@code exo_controller} (see below).
+ *       custom {@code exo_controller}.
  * </ul>
  *
  * <h2>Overriding drawables</h2>
@@ -175,83 +165,34 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
  * The drawables used by {@link StyledPlayerControlView} (with its default layout file) can be
  * overridden by drawables with the same names defined in your application. See the {@link
  * StyledPlayerControlView} documentation for a list of drawables that can be overridden.
- *
- * <h2>Overriding the layout file</h2>
- *
- * To customize the layout of StyledPlayerView throughout your app, or just for certain
- * configurations, you can define {@code exo_styled_player_view.xml} layout files in your
- * application {@code res/layout*} directories. These layouts will override the one provided by the
- * library, and will be inflated for use by StyledPlayerView. The view identifies and binds its
- * children by looking for the following ids:
- *
- * <ul>
- *   <li><b>{@code exo_content_frame}</b> - A frame whose aspect ratio is resized based on the video
- *       or album art of the media being played, and the configured {@code resize_mode}. The video
- *       surface view is inflated into this frame as its first child.
- *       <ul>
- *         <li>Type: {@link AspectRatioFrameLayout}
- *       </ul>
- *   <li><b>{@code exo_shutter}</b> - A view that's made visible when video should be hidden. This
- *       view is typically an opaque view that covers the video surface, thereby obscuring it when
- *       visible. Obscuring the surface in this way also helps to prevent flicker at the start of
- *       playback when {@code surface_type="surface_view"}.
- *       <ul>
- *         <li>Type: {@link View}
- *       </ul>
- *   <li><b>{@code exo_buffering}</b> - A view that's made visible when the player is buffering.
- *       This view typically displays a buffering spinner or animation.
- *       <ul>
- *         <li>Type: {@link View}
- *       </ul>
- *   <li><b>{@code exo_subtitles}</b> - Displays subtitles.
- *       <ul>
- *         <li>Type: {@link SubtitleView}
- *       </ul>
- *   <li><b>{@code exo_artwork}</b> - Displays album art.
- *       <ul>
- *         <li>Type: {@link ImageView}
- *       </ul>
- *   <li><b>{@code exo_error_message}</b> - Displays an error message to the user if playback fails.
- *       <ul>
- *         <li>Type: {@link TextView}
- *       </ul>
- *   <li><b>{@code exo_controller_placeholder}</b> - A placeholder that's replaced with the inflated
- *       {@link StyledPlayerControlView}. Ignored if an {@code exo_controller} view exists.
- *       <ul>
- *         <li>Type: {@link View}
- *       </ul>
- *   <li><b>{@code exo_controller}</b> - An already inflated {@link StyledPlayerControlView}. Allows
- *       use of a custom extension of {@link StyledPlayerControlView}. {@link
- *       StyledPlayerControlView} and {@link DefaultTimeBar} attributes set on the StyledPlayerView
- *       will not be automatically propagated through to this instance. If a view exists with this
- *       id, any {@code exo_controller_placeholder} view will be ignored.
- *       <ul>
- *         <li>Type: {@link StyledPlayerControlView}
- *       </ul>
- *   <li><b>{@code exo_ad_overlay}</b> - A {@link FrameLayout} positioned on top of the player which
- *       is used to show ad UI (if applicable).
- *       <ul>
- *         <li>Type: {@link FrameLayout}
- *       </ul>
- *   <li><b>{@code exo_overlay}</b> - A {@link FrameLayout} positioned on top of the player which
- *       the app can access via {@link #getOverlayFrameLayout()}, provided for convenience.
- *       <ul>
- *         <li>Type: {@link FrameLayout}
- *       </ul>
- * </ul>
- *
- * <p>All child views are optional and so can be omitted if not required, however where defined they
- * must be of the expected type.
- *
- * <h2>Specifying a custom layout file</h2>
- *
- * Defining your own {@code exo_styled_player_view.xml} is useful to customize the layout of
- * StyledPlayerView throughout your application. It's also possible to customize the layout for a
- * single instance in a layout file. This is achieved by setting the {@code player_layout_id}
- * attribute on a StyledPlayerView. This will cause the specified layout to be inflated instead of
- * {@code exo_styled_player_view.xml} for only the instance on which the attribute is set.
  */
 public class StyledPlayerView extends FrameLayout implements AdViewProvider {
+
+  /** Listener to be notified about changes of the visibility of the UI controls. */
+  public interface ControllerVisibilityListener {
+
+    /**
+     * Called when the visibility changes.
+     *
+     * @param visibility The new visibility. Either {@link View#VISIBLE} or {@link View#GONE}.
+     */
+    void onVisibilityChanged(int visibility);
+  }
+
+  /**
+   * Listener invoked when the fullscreen button is clicked. The implementation is responsible for
+   * changing the UI layout.
+   */
+  public interface FullscreenButtonClickListener {
+
+    /**
+     * Called when the fullscreen button is clicked.
+     *
+     * @param isFullScreen {@code true} if the video rendering surface should be fullscreen, {@code
+     *     false} otherwise.
+     */
+    void onFullscreenButtonClick(boolean isFullScreen);
+  }
 
   /**
    * Determines when the buffering view is shown. One of {@link #SHOW_BUFFERING_NEVER}, {@link
@@ -259,6 +200,7 @@ public class StyledPlayerView extends FrameLayout implements AdViewProvider {
    */
   @Documented
   @Retention(RetentionPolicy.SOURCE)
+  @Target(TYPE_USE)
   @IntDef({SHOW_BUFFERING_NEVER, SHOW_BUFFERING_WHEN_PLAYING, SHOW_BUFFERING_ALWAYS})
   public @interface ShowBuffering {}
   /** The buffering view is never shown. */
@@ -295,7 +237,16 @@ public class StyledPlayerView extends FrameLayout implements AdViewProvider {
 
   @Nullable private Player player;
   private boolean useController;
-  @Nullable private StyledPlayerControlView.VisibilityListener controllerVisibilityListener;
+
+  // At most one of controllerVisibilityListener and legacyControllerVisibilityListener is non-null.
+  @Nullable private ControllerVisibilityListener controllerVisibilityListener;
+
+  @SuppressWarnings("deprecation")
+  @Nullable
+  private StyledPlayerControlView.VisibilityListener legacyControllerVisibilityListener;
+
+  @Nullable private FullscreenButtonClickListener fullscreenButtonClickListener;
+
   private boolean useArtwork;
   @Nullable private Drawable defaultArtwork;
   private @ShowBuffering int showBuffering;
@@ -308,8 +259,6 @@ public class StyledPlayerView extends FrameLayout implements AdViewProvider {
   private boolean controllerHideOnTouch;
   private int textureViewRotation;
   private boolean isTouching;
-  private static final int PICTURE_TYPE_FRONT_COVER = 3;
-  private static final int PICTURE_TYPE_NOT_SET = -1;
 
   public StyledPlayerView(Context context) {
     this(context, /* attrs= */ null);
@@ -498,7 +447,7 @@ public class StyledPlayerView extends FrameLayout implements AdViewProvider {
     if (customController != null) {
       this.controller = customController;
     } else if (controllerPlaceholder != null) {
-      // Propagate attrs as playbackAttrs so that PlayerControlView's custom attributes are
+      // Propagate attrs as playbackAttrs so that StyledPlayerControlView's custom attributes are
       // transferred, but standard attributes (e.g. background) are not.
       this.controller = new StyledPlayerControlView(context, null, 0, attrs);
       controller.setId(R.id.exo_controller);
@@ -518,6 +467,9 @@ public class StyledPlayerView extends FrameLayout implements AdViewProvider {
     if (controller != null) {
       controller.hideImmediately();
       controller.addVisibilityListener(/* listener= */ componentListener);
+    }
+    if (useController) {
+      setClickable(true);
     }
     updateContentDescription();
   }
@@ -603,7 +555,7 @@ public class StyledPlayerView extends FrameLayout implements AdViewProvider {
         updateAspectRatio();
       }
       if (subtitleView != null && player.isCommandAvailable(COMMAND_GET_TEXT)) {
-        subtitleView.setCues(player.getCurrentCues());
+        subtitleView.setCues(player.getCurrentCues().cues);
       }
       player.addListener(componentListener);
       maybeShowController(false);
@@ -683,10 +635,14 @@ public class StyledPlayerView extends FrameLayout implements AdViewProvider {
    * Sets whether the playback controls can be shown. If set to {@code false} the playback controls
    * are never visible and are disconnected from the player.
    *
+   * <p>This call will update whether the view is clickable. After the call, the view will be
+   * clickable if playback controls can be shown or if the view has a registered click listener.
+   *
    * @param useController Whether the playback controls can be shown.
    */
   public void setUseController(boolean useController) {
     Assertions.checkState(!useController || controller != null);
+    setClickable(useController || hasOnClickListeners());
     if (this.useController == useController) {
       return;
     }
@@ -705,7 +661,7 @@ public class StyledPlayerView extends FrameLayout implements AdViewProvider {
    *
    * @param color The background color.
    */
-  public void setShutterBackgroundColor(int color) {
+  public void setShutterBackgroundColor(@ColorInt int color) {
     if (shutterView != null) {
       shutterView.setBackgroundColor(color);
     }
@@ -912,33 +868,78 @@ public class StyledPlayerView extends FrameLayout implements AdViewProvider {
   /**
    * Sets the {@link StyledPlayerControlView.VisibilityListener}.
    *
+   * <p>Removes any listener set by {@link
+   * #setControllerVisibilityListener(StyledPlayerControlView.VisibilityListener)}.
+   *
    * @param listener The listener to be notified about visibility changes, or null to remove the
    *     current listener.
    */
+  @SuppressWarnings("deprecation") // Clearing the legacy listener.
+  public void setControllerVisibilityListener(@Nullable ControllerVisibilityListener listener) {
+    this.controllerVisibilityListener = listener;
+    setControllerVisibilityListener((StyledPlayerControlView.VisibilityListener) null);
+  }
+
+  /**
+   * Sets the {@link StyledPlayerControlView.VisibilityListener}.
+   *
+   * <p>Removes any listener set by {@link
+   * #setControllerVisibilityListener(ControllerVisibilityListener)}.
+   *
+   * @deprecated Use {@link #setControllerVisibilityListener(ControllerVisibilityListener)} instead.
+   */
+  @SuppressWarnings("deprecation")
+  @Deprecated
   public void setControllerVisibilityListener(
       @Nullable StyledPlayerControlView.VisibilityListener listener) {
     Assertions.checkStateNotNull(controller);
-    if (this.controllerVisibilityListener == listener) {
+    if (this.legacyControllerVisibilityListener == listener) {
       return;
     }
-    if (this.controllerVisibilityListener != null) {
-      controller.removeVisibilityListener(this.controllerVisibilityListener);
+
+    if (this.legacyControllerVisibilityListener != null) {
+      controller.removeVisibilityListener(this.legacyControllerVisibilityListener);
     }
-    this.controllerVisibilityListener = listener;
+    this.legacyControllerVisibilityListener = listener;
     if (listener != null) {
       controller.addVisibilityListener(listener);
     }
+    setControllerVisibilityListener((ControllerVisibilityListener) null);
+  }
+
+  /**
+   * Sets the {@link FullscreenButtonClickListener}.
+   *
+   * <p>Clears any listener set by {@link
+   * #setControllerOnFullScreenModeChangedListener(StyledPlayerControlView.OnFullScreenModeChangedListener)}.
+   *
+   * @param listener The listener to be notified when the fullscreen button is clicked, or null to
+   *     remove the current listener and hide the fullscreen button.
+   */
+  @SuppressWarnings(
+      "deprecation") // Calling the deprecated method on StyledPlayerControlView for now.
+  public void setFullscreenButtonClickListener(@Nullable FullscreenButtonClickListener listener) {
+    Assertions.checkStateNotNull(controller);
+    this.fullscreenButtonClickListener = listener;
+    controller.setOnFullScreenModeChangedListener(componentListener);
   }
 
   /**
    * Sets the {@link StyledPlayerControlView.OnFullScreenModeChangedListener}.
    *
+   * <p>Clears any listener set by {@link
+   * #setFullscreenButtonClickListener(FullscreenButtonClickListener)}.
+   *
    * @param listener The listener to be notified when the fullscreen button is clicked, or null to
    *     remove the current listener and hide the fullscreen button.
+   * @deprecated Use {@link #setFullscreenButtonClickListener(FullscreenButtonClickListener)}
+   *     instead.
    */
+  @Deprecated
   public void setControllerOnFullScreenModeChangedListener(
       @Nullable StyledPlayerControlView.OnFullScreenModeChangedListener listener) {
     Assertions.checkStateNotNull(controller);
+    this.fullscreenButtonClickListener = null;
     controller.setOnFullScreenModeChangedListener(listener);
   }
 
@@ -1106,29 +1107,9 @@ public class StyledPlayerView extends FrameLayout implements AdViewProvider {
   }
 
   @Override
-  public boolean onTouchEvent(MotionEvent event) {
-    if (!useController() || player == null) {
-      return false;
-    }
-    switch (event.getAction()) {
-      case MotionEvent.ACTION_DOWN:
-        isTouching = true;
-        return true;
-      case MotionEvent.ACTION_UP:
-        if (isTouching) {
-          isTouching = false;
-          return performClick();
-        }
-        return false;
-      default:
-        return false;
-    }
-  }
-
-  @Override
   public boolean performClick() {
-    super.performClick();
-    return toggleControllerVisibility();
+    toggleControllerVisibility();
+    return super.performClick();
   }
 
   @Override
@@ -1224,18 +1205,15 @@ public class StyledPlayerView extends FrameLayout implements AdViewProvider {
     return false;
   }
 
-  private boolean toggleControllerVisibility() {
+  private void toggleControllerVisibility() {
     if (!useController() || player == null) {
-      return false;
+      return;
     }
     if (!controller.isFullyVisible()) {
       maybeShowController(true);
-      return true;
     } else if (controllerHideOnTouch) {
       controller.hide();
-      return true;
     }
-    return false;
   }
 
   /** Shows the playback controls, but only if forced or shown indefinitely. */
@@ -1279,7 +1257,7 @@ public class StyledPlayerView extends FrameLayout implements AdViewProvider {
 
   private void updateForCurrentTrackSelections(boolean isNewPlayer) {
     @Nullable Player player = this.player;
-    if (player == null || player.getCurrentTracksInfo().getTrackGroupInfos().isEmpty()) {
+    if (player == null || player.getCurrentTracks().isEmpty()) {
       if (!keepContentOnPlayerReset) {
         hideArtwork();
         closeShutter();
@@ -1292,7 +1270,7 @@ public class StyledPlayerView extends FrameLayout implements AdViewProvider {
       closeShutter();
     }
 
-    if (player.getCurrentTracksInfo().isTypeSelected(C.TRACK_TYPE_VIDEO)) {
+    if (player.getCurrentTracks().isTypeSelected(C.TRACK_TYPE_VIDEO)) {
       // Video enabled, so artwork must be hidden. If the shutter is closed, it will be opened
       // in onRenderedFirstFrame().
       hideArtwork();
@@ -1489,11 +1467,15 @@ public class StyledPlayerView extends FrameLayout implements AdViewProvider {
         || keyCode == KeyEvent.KEYCODE_DPAD_CENTER;
   }
 
+  // Implementing the deprecated StyledPlayerControlView.VisibilityListener and
+  // StyledPlayerControlView.OnFullScreenModeChangedListener for now.
+  @SuppressWarnings("deprecation")
   private final class ComponentListener
       implements Player.Listener,
           OnLayoutChangeListener,
           OnClickListener,
-          StyledPlayerControlView.VisibilityListener {
+          StyledPlayerControlView.VisibilityListener,
+          StyledPlayerControlView.OnFullScreenModeChangedListener {
 
     private final Period period;
     private @Nullable Object lastPeriodUidWithTracks;
@@ -1505,9 +1487,9 @@ public class StyledPlayerView extends FrameLayout implements AdViewProvider {
     // Player.Listener implementation
 
     @Override
-    public void onCues(List<Cue> cues) {
+    public void onCues(CueGroup cueGroup) {
       if (subtitleView != null) {
-        subtitleView.setCues(cues);
+        subtitleView.setCues(cueGroup.cues);
       }
     }
 
@@ -1524,7 +1506,7 @@ public class StyledPlayerView extends FrameLayout implements AdViewProvider {
     }
 
     @Override
-    public void onTracksInfoChanged(TracksInfo tracksInfo) {
+    public void onTracksChanged(Tracks tracks) {
       // Suppress the update if transitioning to an unprepared period within the same window. This
       // is necessary to avoid closing the shutter when such a transition occurs. See:
       // https://github.com/google/ExoPlayer/issues/5507.
@@ -1532,7 +1514,7 @@ public class StyledPlayerView extends FrameLayout implements AdViewProvider {
       Timeline timeline = player.getCurrentTimeline();
       if (timeline.isEmpty()) {
         lastPeriodUidWithTracks = null;
-      } else if (!player.getCurrentTracksInfo().getTrackGroupInfos().isEmpty()) {
+      } else if (!player.getCurrentTracks().isEmpty()) {
         lastPeriodUidWithTracks =
             timeline.getPeriod(player.getCurrentPeriodIndex(), period, /* setIds= */ true).uid;
       } else if (lastPeriodUidWithTracks != null) {
@@ -1603,6 +1585,18 @@ public class StyledPlayerView extends FrameLayout implements AdViewProvider {
     @Override
     public void onVisibilityChange(int visibility) {
       updateContentDescription();
+      if (controllerVisibilityListener != null) {
+        controllerVisibilityListener.onVisibilityChanged(visibility);
+      }
+    }
+
+    // StyledPlayerControlView.OnFullScreenModeChangedListener implementation
+
+    @Override
+    public void onFullScreenModeChanged(boolean isFullScreen) {
+      if (fullscreenButtonClickListener != null) {
+        fullscreenButtonClickListener.onFullscreenButtonClick(isFullScreen);
+      }
     }
   }
 }

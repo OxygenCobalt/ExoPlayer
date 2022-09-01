@@ -18,6 +18,7 @@ package com.google.android.exoplayer2.audio;
 import static com.google.android.exoplayer2.util.Util.castNonNull;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static java.lang.annotation.ElementType.TYPE_USE;
 
 import android.media.AudioTimestamp;
 import android.media.AudioTrack;
@@ -30,6 +31,7 @@ import com.google.android.exoplayer2.util.Util;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 
 /**
@@ -111,13 +113,20 @@ import java.lang.reflect.Method;
   /** {@link AudioTrack} playback states. */
   @Documented
   @Retention(RetentionPolicy.SOURCE)
+  @Target(TYPE_USE)
   @IntDef({PLAYSTATE_STOPPED, PLAYSTATE_PAUSED, PLAYSTATE_PLAYING})
   private @interface PlayState {}
-  /** @see AudioTrack#PLAYSTATE_STOPPED */
+  /**
+   * @see AudioTrack#PLAYSTATE_STOPPED
+   */
   private static final int PLAYSTATE_STOPPED = AudioTrack.PLAYSTATE_STOPPED;
-  /** @see AudioTrack#PLAYSTATE_PAUSED */
+  /**
+   * @see AudioTrack#PLAYSTATE_PAUSED
+   */
   private static final int PLAYSTATE_PAUSED = AudioTrack.PLAYSTATE_PAUSED;
-  /** @see AudioTrack#PLAYSTATE_PLAYING */
+  /**
+   * @see AudioTrack#PLAYSTATE_PLAYING
+   */
   private static final int PLAYSTATE_PLAYING = AudioTrack.PLAYSTATE_PLAYING;
 
   /**
@@ -375,11 +384,6 @@ import java.lang.reflect.Method;
   public int getAvailableBufferSize(long writtenBytes) {
     int bytesPending = (int) (writtenBytes - (getPlaybackHeadPosition() * outputPcmFrameSize));
     return bufferSize - bytesPending;
-  }
-
-  /** Returns the duration of audio that is buffered but unplayed. */
-  public long getPendingBufferDurationMs(long writtenFrames) {
-    return Util.usToMs(framesToDurationUs(writtenFrames - getPlaybackHeadPosition()));
   }
 
   /** Returns whether the track is in an invalid state and must be recreated. */

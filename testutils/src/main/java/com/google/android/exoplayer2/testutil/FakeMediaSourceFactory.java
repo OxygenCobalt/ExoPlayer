@@ -15,59 +15,40 @@
  */
 package com.google.android.exoplayer2.testutil;
 
-import androidx.annotation.Nullable;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.MediaItem;
-import com.google.android.exoplayer2.drm.DrmSessionManager;
 import com.google.android.exoplayer2.drm.DrmSessionManagerProvider;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.MediaSourceFactory;
 import com.google.android.exoplayer2.source.ads.AdPlaybackState;
 import com.google.android.exoplayer2.testutil.FakeTimeline.TimelineWindowDefinition;
-import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.upstream.LoadErrorHandlingPolicy;
 import com.google.android.exoplayer2.util.Util;
+import com.google.common.collect.ImmutableList;
 
 /** Fake {@link MediaSourceFactory} that creates a {@link FakeMediaSource}. */
-public class FakeMediaSourceFactory implements MediaSourceFactory {
+// Implement and return deprecated type for backwards compatibility.
+@SuppressWarnings("deprecation")
+public final class FakeMediaSourceFactory implements MediaSourceFactory {
 
   /** The window UID used by media sources that are created by the factory. */
   public static final Object DEFAULT_WINDOW_UID = new Object();
 
   @Override
   public MediaSourceFactory setDrmSessionManagerProvider(
-      @Nullable DrmSessionManagerProvider drmSessionManagerProvider) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Deprecated
-  @Override
-  public MediaSourceFactory setDrmSessionManager(@Nullable DrmSessionManager drmSessionManager) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Deprecated
-  @Override
-  public MediaSourceFactory setDrmHttpDataSourceFactory(
-      @Nullable HttpDataSource.Factory drmHttpDataSourceFactory) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Deprecated
-  @Override
-  public MediaSourceFactory setDrmUserAgent(@Nullable String userAgent) {
+      DrmSessionManagerProvider drmSessionManagerProvider) {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public MediaSourceFactory setLoadErrorHandlingPolicy(
-      @Nullable LoadErrorHandlingPolicy loadErrorHandlingPolicy) {
+      LoadErrorHandlingPolicy loadErrorHandlingPolicy) {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public int[] getSupportedTypes() {
-    return new int[] {C.TYPE_OTHER};
+    return new int[] {C.CONTENT_TYPE_OTHER};
   }
 
   @Override
@@ -83,7 +64,7 @@ public class FakeMediaSourceFactory implements MediaSourceFactory {
             /* durationUs= */ 1000 * C.MICROS_PER_SECOND,
             /* defaultPositionUs= */ 2 * C.MICROS_PER_SECOND,
             /* windowOffsetInFirstPeriodUs= */ Util.msToUs(123456789),
-            AdPlaybackState.NONE,
+            ImmutableList.of(AdPlaybackState.NONE),
             mediaItem);
     return new FakeMediaSource(new FakeTimeline(timelineWindowDefinition));
   }

@@ -20,7 +20,7 @@ import com.google.android.exoplayer2.C;
 /** Base class for buffers with flags. */
 public abstract class Buffer {
 
-  @C.BufferFlags private int flags;
+  private @C.BufferFlags int flags;
 
   /** Clears the buffer. */
   public void clear() {
@@ -30,6 +30,11 @@ public abstract class Buffer {
   /** Returns whether the {@link C#BUFFER_FLAG_DECODE_ONLY} flag is set. */
   public final boolean isDecodeOnly() {
     return getFlag(C.BUFFER_FLAG_DECODE_ONLY);
+  }
+
+  /** Returns whether the {@link C#BUFFER_FLAG_FIRST_SAMPLE} flag is set. */
+  public final boolean isFirstSample() {
+    return getFlag(C.BUFFER_FLAG_FIRST_SAMPLE);
   }
 
   /** Returns whether the {@link C#BUFFER_FLAG_END_OF_STREAM} flag is set. */

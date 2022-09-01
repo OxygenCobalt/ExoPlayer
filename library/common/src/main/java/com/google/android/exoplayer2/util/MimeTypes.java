@@ -54,6 +54,10 @@ public final class MimeTypes {
   public static final String VIDEO_FLV = BASE_TYPE_VIDEO + "/x-flv";
   public static final String VIDEO_DOLBY_VISION = BASE_TYPE_VIDEO + "/dolby-vision";
   public static final String VIDEO_OGG = BASE_TYPE_VIDEO + "/ogg";
+  public static final String VIDEO_AVI = BASE_TYPE_VIDEO + "/x-msvideo";
+  public static final String VIDEO_MJPEG = BASE_TYPE_VIDEO + "/mjpeg";
+  public static final String VIDEO_MP42 = BASE_TYPE_VIDEO + "/mp42";
+  public static final String VIDEO_MP43 = BASE_TYPE_VIDEO + "/mp43";
   public static final String VIDEO_UNKNOWN = BASE_TYPE_VIDEO + "/x-unknown";
 
   // audio/ MIME types
@@ -85,6 +89,7 @@ public final class MimeTypes {
   public static final String AUDIO_AMR_NB = BASE_TYPE_AUDIO + "/3gpp";
   public static final String AUDIO_AMR_WB = BASE_TYPE_AUDIO + "/amr-wb";
   public static final String AUDIO_FLAC = BASE_TYPE_AUDIO + "/flac";
+  public static final String AUDIO_MIDI = BASE_TYPE_AUDIO + "/midi";
   public static final String AUDIO_ALAC = BASE_TYPE_AUDIO + "/alac";
   public static final String AUDIO_MSGSM = BASE_TYPE_AUDIO + "/gsm";
   public static final String AUDIO_OGG = BASE_TYPE_AUDIO + "/ogg";
@@ -532,8 +537,7 @@ public final class MimeTypes {
    * @param codec An RFC 6381 codec string, or {@code null} if unknown or not applicable.
    * @return The corresponding {@link C.Encoding}, or {@link C#ENCODING_INVALID}.
    */
-  @C.Encoding
-  public static int getEncoding(String mimeType, @Nullable String codec) {
+  public static @C.Encoding int getEncoding(String mimeType, @Nullable String codec) {
     switch (mimeType) {
       case MimeTypes.AUDIO_MPEG:
         return C.ENCODING_MP3;
@@ -704,8 +708,7 @@ public final class MimeTypes {
     }
 
     /** Returns the encoding for {@link #audioObjectTypeIndication}. */
-    @C.Encoding
-    public int getEncoding() {
+    public @C.Encoding int getEncoding() {
       // See AUDIO_OBJECT_TYPE_AAC_* constants in AacUtil.
       switch (audioObjectTypeIndication) {
         case 2:

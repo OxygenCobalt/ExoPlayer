@@ -21,7 +21,7 @@ class CombinedJavadocPlugin implements Plugin<Project> {
 
   // Dackka snapshots are listed at https://androidx.dev/dackka/builds.
   static final String DACKKA_JAR_URL =
-      "https://androidx.dev/dackka/builds/7758117/artifacts/dackka-0.0.10.jar"
+      "https://androidx.dev/dackka/builds/8003564/artifacts/dackka-0.0.14.jar"
 
   @Override
   void apply(Project project) {
@@ -48,9 +48,21 @@ class CombinedJavadocPlugin implements Plugin<Project> {
               libraryModule.android.libraryVariants.all { variant ->
                 def name = variant.buildType.name
                 if (name == "release") {
+                  // Works around b/234569640 that causes different versions of the androidx.media
+                  // jar to be on the classpath.
+                  def allJarFiles = []
+                  allJarFiles.addAll(variant.javaCompileProvider.get().classpath.files)
+                  def filteredJarFiles = allJarFiles.findAll { file ->
+                    if (file ==~ /.*media-.\..\..-api.jar$/
+                        && !file.path.endsWith(
+                            "media-" + project.ext.androidxMediaVersion + "-api.jar")) {
+                      return false;
+                    }
+                    return true;
+                  }
                   classpath +=
                       libraryModule.project.files(
-                          variant.javaCompileProvider.get().classpath.files,
+                          filteredJarFiles,
                           libraryModule.project.android.getBootClasspath())
                 }
               }
@@ -67,12 +79,12 @@ class CombinedJavadocPlugin implements Plugin<Project> {
           }
         }
 
+        def dackkaOutputDir = project.file("$project.buildDir/docs/dackka")
         project.task(DACKKA_TASK_NAME, type: JavaExec) {
           doFirst {
             // Recreate the output directory to remove any leftover files from a previous run.
-            def outputDir = project.file("$project.buildDir/docs/dackka")
-            project.delete outputDir
-            project.mkdir outputDir
+            project.delete dackkaOutputDir
+            project.mkdir dackkaOutputDir
 
             // Download the Dackka JAR.
             new URL(DACKKA_JAR_URL).withInputStream {
@@ -104,15 +116,27 @@ class CombinedJavadocPlugin implements Plugin<Project> {
                 .filter({ f -> project.file(f).exists() }).join(";")
             def dependenciesString = project.files(dependencies).asPath.replace(':', ';')
             args("-moduleName", "",
-                "-outputDir", "$outputDir",
+                "-outputDir", "$dackkaOutputDir",
                 "-globalLinks", "$globalLinksString",
                 "-loggingLevel", "WARN",
                 "-sourceSet", "-src $sourcesString -classpath $dependenciesString",
                 "-offlineMode")
-            environment("DEVSITE_TENANT", "androidx")
+            environment("DEVSITE_TENANT", "androidx/media3")
           }
           description = "Generates combined javadoc for developer.android.com."
           classpath = project.files(new File(getTemporaryDir(), "dackka.jar"))
+          doLast {
+            libraryModules.each { libraryModule ->
+              project.copy {
+                from "${libraryModule.projectDir}/src/main/javadoc"
+                into "${dackkaOutputDir}/reference/"
+              }
+              project.copy {
+                from "${libraryModule.projectDir}/src/main/javadoc"
+                into "${dackkaOutputDir}/reference/kotlin/"
+              }
+            }
+          }
         }
       }
     }

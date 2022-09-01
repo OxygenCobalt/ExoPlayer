@@ -85,7 +85,7 @@ building the media item.
 
 If an app wants to customise the `DrmSessionManager` used for playback, they can
 implement a `DrmSessionManagerProvider` and pass this to the
-`MediaSourceFactory` which is [used when building the player]. The provider can
+`MediaSource.Factory` which is [used when building the player]. The provider can
 choose whether to instantiate a new manager instance each time or not. To always
 use the same instance:
 
@@ -93,12 +93,19 @@ use the same instance:
 DrmSessionManager customDrmSessionManager =
     new CustomDrmSessionManager(/* ... */);
 // Pass a drm session manager provider to the media source factory.
-MediaSourceFactory mediaSourceFactory =
-    new DefaultMediaSourceFactory(dataSourceFactory)
+MediaSource.Factory mediaSourceFactory =
+    new DefaultMediaSourceFactory(context)
         .setDrmSessionManagerProvider(mediaItem -> customDrmSessionManager);
 ~~~
 {: .language-java}
 
+### Improving playback performance ###
+
+If you're experiencing video stuttering on a device running Android 6 to 11 when
+playing DRM protected content, you can try [enabling asynchronous buffer
+queueing].
+
 [main demo app]: {{ site.release_v2 }}/demos/main
 [`MediaDrm`]: {{ site.android_sdk }}/android/media/MediaDrm.html
 [used when building the player]: {{ site.baseurl }}/media-sources.html#customizing-media-source-creation
+[enabling asynchronous buffer queueing]: {{ site.baseurl }}/customization.html#enabling-asynchronous-buffer-queueing
