@@ -490,10 +490,31 @@ public final class Id3Decoder extends SimpleMetadataDecoder {
 
     ImmutableList.Builder<String> values = ImmutableList.builder();
     String charset = getCharsetName(encoding);
+
+    @Nullable String firstBomCharset = null;
+
     int valueStartIndex = index;
     int valueEndIndex = indexOfTerminator(data, valueStartIndex, encoding);
     while (valueStartIndex < valueEndIndex) {
-      String value = new String(data, valueStartIndex, valueEndIndex - valueStartIndex, charset);
+      String realCharset = charset;
+      if (encoding == ID3_TEXT_ENCODING_UTF_16) {
+        // Certain ID3v2 implementations may try to save space with a UTF-16 encoding by adding
+        // a BOM to the first value, and then omitting the BOM from all following values, while
+        // still implicitly using the endianness defined from the first value's BOM. In this case,
+        // we want to fall back to the first defined endianness instead of allowing String to pick
+        // a likely incorrect endianness.
+        @Nullable String bomCharset = getBomCharset(data, valueStartIndex);
+        if (bomCharset != null && firstBomCharset == null) {
+          // First BOM we have found, keep this for later.
+          firstBomCharset = bomCharset;
+        } else if (bomCharset == null && firstBomCharset != null) {
+          // No BOM in this value, but we do have a prior BOM we can re-use.
+          realCharset = firstBomCharset;
+        }
+      }
+
+      String value = new String(data, valueStartIndex, valueEndIndex - valueStartIndex, realCharset);
+      Log.d("Id3Decoder", "Using charset " + realCharset + " with end value " + value);
       values.add(value);
 
       valueStartIndex = valueEndIndex + delimiterLength(encoding);
@@ -502,6 +523,19 @@ public final class Id3Decoder extends SimpleMetadataDecoder {
 
     ImmutableList<String> result = values.build();
     return result.isEmpty() ? ImmutableList.of("") : result;
+  }
+
+  @Nullable
+  private static String getBomCharset(byte[] data, final int index) {
+    int bom = ((((short) data[index]) << 8) | (((short) data[index + 1]) ^ 0xff));
+    switch (bom) {
+      case 0xFFFE:
+        return "UTF-16LE";
+      case 0xFEFF:
+        return "UTF-16BE";
+      default:
+        return null;
+    }
   }
 
   @Nullable
@@ -899,3 +933,4 @@ public final class Id3Decoder extends SimpleMetadataDecoder {
     }
   }
 }
+
