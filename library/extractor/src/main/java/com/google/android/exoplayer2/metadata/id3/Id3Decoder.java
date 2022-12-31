@@ -514,7 +514,6 @@ public final class Id3Decoder extends SimpleMetadataDecoder {
       }
 
       String value = new String(data, valueStartIndex, valueEndIndex - valueStartIndex, realCharset);
-      Log.d("Id3Decoder", "Using charset " + realCharset + " with end value " + value);
       values.add(value);
 
       valueStartIndex = valueEndIndex + delimiterLength(encoding);
@@ -527,14 +526,12 @@ public final class Id3Decoder extends SimpleMetadataDecoder {
 
   @Nullable
   private static String getBomCharset(byte[] data, final int index) {
-    int bom = ((((short) data[index]) << 8) | (((short) data[index + 1]) ^ 0xff));
-    switch (bom) {
-      case 0xFFFE:
-        return "UTF-16LE";
-      case 0xFEFF:
-        return "UTF-16BE";
-      default:
-        return null;
+    if (data[index] == (byte) 0xff && data[index + 1] == (byte) 0xfe) {
+      return "UTF-16LE";
+    } else if (data[index] == (byte) 0xfe && data[index + 1] == (byte) 0xff) {
+      return "UTF-16BE";
+    } else {
+      return null;
     }
   }
 
