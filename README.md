@@ -1,4 +1,4 @@
-# ExoPlayer <img src="https://img.shields.io/github/v/release/google/ExoPlayer.svg?label=latest"/>
+# Auxio-Flavored ExoPlayer <img src="https://img.shields.io/github/v/release/google/ExoPlayer.svg?label=latest"/>
 
 ExoPlayer is an application level media player for Android. It provides an
 alternative to Android’s MediaPlayer API for playing audio and video both
@@ -6,6 +6,10 @@ locally and over the Internet. ExoPlayer supports features not currently
 supported by Android’s MediaPlayer API, including DASH and SmoothStreaming
 adaptive playbacks. Unlike the MediaPlayer API, ExoPlayer is easy to customize
 and extend, and can be updated through Play Store application updates.
+
+The Auxio flavor of ExoPlayer enables automatic FFMpeg extension building and
+internal metadata fixes. This flavor does rely on submodules, so you will need
+to clone the repository using `git clone --recurse-submodules`.
 
 ## Documentation
 
