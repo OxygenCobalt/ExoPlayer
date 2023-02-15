@@ -14,6 +14,7 @@
 import org.apache.tools.ant.taskdefs.condition.Os
 apply from: "$gradle.ext.exoplayerSettingsDir/common_library_config.gradle"
 
+android.ndkVersion = "23.2.8568313"
 // Configure the native build only if ffmpeg is present to avoid gradle sync
 // failures if ffmpeg hasn't been built according to the README instructions.
 android.externalNativeBuild.cmake.path = 'src/main/jni/CMakeLists.txt'
@@ -46,6 +47,10 @@ task assembleFfmpeg {
 // make sure that flac is set up before ndk compiling starts
 tasks.withType(JavaCompile) {
     compileTask -> compileTask.dependsOn(assembleFfmpeg)
+}
+
+clean {
+    delete new File("$projectDir/src/main/jni/ffmpeg/android-libs/")
 }
 
 dependencies {
