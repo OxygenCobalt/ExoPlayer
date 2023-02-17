@@ -44,13 +44,12 @@ task assembleFfmpeg {
     }
 }
 
-// make sure that flac is set up before ndk compiling starts
 tasks.withType(JavaCompile) {
     compileTask -> compileTask.dependsOn(assembleFfmpeg)
 }
 
 clean {
-    delete new File("$projectDir/src/main/jni/ffmpeg/android-libs/")
+    delete "$projectDir/src/main/jni/ffmpeg/android-libs/"
 }
 
 dependencies {
