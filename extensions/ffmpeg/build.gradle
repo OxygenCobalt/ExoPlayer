@@ -21,13 +21,8 @@ android.externalNativeBuild.cmake.path = 'src/main/jni/CMakeLists.txt'
 // Should match cmake_minimum_required.
 android.externalNativeBuild.cmake.version = '3.21.0+'
 
-task assembleFfmpeg {
-    def jniDir = "$projectDir/src/main/jni/"
-    def libs = new File("$jniDir/ffmpeg/android-libs")
-    if (libs.exists()) {
-        return
-    }
-
+task assembleFfmpeg(type: Exec) {
+    workingDir "$projectDir/src/main/jni"
     def host = ""
     if (Os.isFamily(Os.FAMILY_UNIX)) {
         host = "linux-x86_64"
@@ -38,10 +33,15 @@ task assembleFfmpeg {
                 "Building with Windows is not supported. " +
                         "Please use WSL or a unix-based operating system.")
     }
-    exec {
-        executable "sh"
-        args "-c", "$jniDir/build_ffmpeg.sh $projectDir/src/main $android.ndkDirectory $host flac alac"
+
+    def libs = new File("$workingDir/ffmpeg/android-libs")
+    if (libs.exists()) {
+        // Always need to execute some command for exec tasks, just do a no-op
+        commandLine "true"
+        return
     }
+
+    commandLine "sh", "-c", "$workingDir/build_ffmpeg.sh $projectDir/src/main $android.ndkDirectory $host flac alac"
 }
 
 tasks.withType(JavaCompile) {
