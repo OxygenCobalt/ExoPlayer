@@ -1,4 +1,4 @@
 [submodule "extensions/ffmpeg/src/main/jni/ffmpeg"]
 	path = extensions/ffmpeg/src/main/jni/ffmpeg
-	url = git://source.ffmpeg.org/ffmpeg
+	url = https://git.ffmpeg.org/ffmpeg.git
 	branch = release/4.2
