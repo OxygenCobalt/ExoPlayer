@@ -938,7 +938,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
           livePlaybackSpeedControl.getAdjustedPlaybackSpeed(
               getCurrentLiveOffsetUs(), getTotalBufferedDurationUs());
       if (mediaClock.getPlaybackParameters().speed != adjustedSpeed) {
-        mediaClock.setPlaybackParameters(playbackInfo.playbackParameters.withSpeed(adjustedSpeed));
+        setMediaClockPlaybackParameters(playbackInfo.playbackParameters.withSpeed(adjustedSpeed));
         handlePlaybackParameters(
             playbackInfo.playbackParameters,
             /* currentPlaybackSpeed= */ mediaClock.getPlaybackParameters().speed,
@@ -946,6 +946,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
             /* acknowledgeCommand= */ false);
       }
     }
+  }
+
+  private void setMediaClockPlaybackParameters(PlaybackParameters playbackParameters) {
+    // Previously sent speed updates from the media clock now become stale.
+    handler.removeMessages(MSG_PLAYBACK_PARAMETERS_CHANGED_INTERNAL);
+    mediaClock.setPlaybackParameters(playbackParameters);
   }
 
   private void notifyTrackSelectionRebuffer() {
@@ -1225,7 +1231,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
             /* newPeriodId= */ periodId,
             /* oldTimeline= */ playbackInfo.timeline,
             /* oldPeriodId= */ playbackInfo.periodId,
-            /* positionForTargetOffsetOverrideUs= */ requestedContentPositionUs);
+            /* positionForTargetOffsetOverrideUs= */ requestedContentPositionUs,
+            /* forceSetTargetOffsetOverride= */ true);
       }
     } finally {
       playbackInfo =
@@ -1334,7 +1341,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
   private void setPlaybackParametersInternal(PlaybackParameters playbackParameters)
       throws ExoPlaybackException {
-    mediaClock.setPlaybackParameters(playbackParameters);
+    setMediaClockPlaybackParameters(playbackParameters);
     handlePlaybackParameters(mediaClock.getPlaybackParameters(), /* acknowledgeCommand= */ true);
   }
 
@@ -1649,7 +1656,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     nextPendingMessageIndexHint = nextPendingMessageIndex;
   }
 
-  private void ensureStopped(Renderer renderer) throws ExoPlaybackException {
+  private void ensureStopped(Renderer renderer) {
     if (renderer.getState() == Renderer.STATE_STARTED) {
       renderer.stop();
     }
@@ -1868,7 +1875,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
           /* oldPeriodId= */ playbackInfo.periodId,
           /* positionForTargetOffsetOverrideUs */ positionUpdate.setTargetLiveOffset
               ? newPositionUs
-              : C.TIME_UNSET);
+              : C.TIME_UNSET,
+          /* forceSetTargetOffsetOverride= */ false);
       if (periodPositionChanged
           || newRequestedContentPositionUs != playbackInfo.requestedContentPositionUs) {
         Object oldPeriodUid = playbackInfo.periodId.periodUid;
@@ -1906,14 +1914,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
       MediaPeriodId newPeriodId,
       Timeline oldTimeline,
       MediaPeriodId oldPeriodId,
-      long positionForTargetOffsetOverrideUs) {
+      long positionForTargetOffsetOverrideUs,
+      boolean forceSetTargetOffsetOverride)
+      throws ExoPlaybackException {
     if (!shouldUseLivePlaybackSpeedControl(newTimeline, newPeriodId)) {
       // Live playback speed control is unused for the current period, reset speed to user-defined
       // playback parameters or 1.0 for ad playback.
       PlaybackParameters targetPlaybackParameters =
           newPeriodId.isAd() ? PlaybackParameters.DEFAULT : playbackInfo.playbackParameters;
       if (!mediaClock.getPlaybackParameters().equals(targetPlaybackParameters)) {
-        mediaClock.setPlaybackParameters(targetPlaybackParameters);
+        setMediaClockPlaybackParameters(targetPlaybackParameters);
+        handlePlaybackParameters(
+            playbackInfo.playbackParameters,
+            targetPlaybackParameters.speed,
+            /* updatePlaybackInfo= */ false,
+            /* acknowledgeCommand= */ false);
       }
       return;
     }
@@ -1930,8 +1945,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
         int oldWindowIndex = oldTimeline.getPeriodByUid(oldPeriodId.periodUid, period).windowIndex;
         oldWindowUid = oldTimeline.getWindow(oldWindowIndex, window).uid;
       }
-      if (!Util.areEqual(oldWindowUid, windowUid)) {
-        // Reset overridden target live offset to media values if window changes.
+      if (!Util.areEqual(oldWindowUid, windowUid) || forceSetTargetOffsetOverride) {
+        // Reset overridden target live offset to media values if window changes or if seekTo
+        // default live position.
         livePlaybackSpeedControl.setTargetLiveOffsetOverrideUs(C.TIME_UNSET);
       }
     }
@@ -1962,7 +1978,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     return maxReadPositionUs;
   }
 
-  private void updatePeriods() throws ExoPlaybackException, IOException {
+  private void updatePeriods() throws ExoPlaybackException {
     if (playbackInfo.timeline.isEmpty() || !mediaSourceList.isPrepared()) {
       // No periods available.
       return;
@@ -2004,7 +2020,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     }
   }
 
-  private void maybeUpdateReadingPeriod() {
+  private void maybeUpdateReadingPeriod() throws ExoPlaybackException {
     @Nullable MediaPeriodHolder readingPeriodHolder = queue.getReadingPeriod();
     if (readingPeriodHolder == null) {
       return;
@@ -2054,7 +2070,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
         /* newPeriodId= */ readingPeriodHolder.info.id,
         /* oldTimeline= */ playbackInfo.timeline,
         /* oldPeriodId= */ oldReadingPeriodHolder.info.id,
-        /* positionForTargetOffsetOverrideUs= */ C.TIME_UNSET);
+        /* positionForTargetOffsetOverrideUs= */ C.TIME_UNSET,
+        /* forceSetTargetOffsetOverride= */ false);
 
     if (readingPeriodHolder.prepared
         && readingPeriodHolder.mediaPeriod.readDiscontinuity() != C.TIME_UNSET) {

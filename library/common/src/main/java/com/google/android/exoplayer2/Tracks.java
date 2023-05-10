@@ -189,6 +189,17 @@ public final class Tracks implements Bundleable {
       return mediaTrackGroup.type;
     }
 
+    /**
+     * Copies the {@code Group} with a new {@link TrackGroup#id}.
+     *
+     * @param groupId The new {@link TrackGroup#id}
+     * @return The copied {@code Group}.
+     */
+    public Group copyWithId(String groupId) {
+      return new Group(
+          mediaTrackGroup.copyWithId(groupId), adaptiveSupported, trackSupport, trackSelected);
+    }
+
     @Override
     public boolean equals(@Nullable Object other) {
       if (this == other) {
@@ -293,6 +304,7 @@ public final class Tracks implements Bundleable {
    * Returns true if at least one track of type {@code trackType} is {@link
    * Group#isTrackSupported(int, boolean) supported}.
    *
+   * @param trackType The track type to query support for.
    * @param allowExceedsCapabilities Whether to consider the track as supported if it has a
    *     supported {@link Format#sampleMimeType MIME type}, but otherwise exceeds the advertised
    *     capabilities of the device. For example, a video track for which there's a corresponding
